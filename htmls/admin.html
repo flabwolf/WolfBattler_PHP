@@ -3,11 +3,131 @@
 
 <head>
     <meta charset="UTF-8">
+    <script src="../js/jquery-3.4.1.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <script src="../js/admin.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
     <title>管理者ページ</title>
 </head>
 
-<body>
-
+<body class="bg-secondary">
+    <header class="bg-dark">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col">
+                    <!-- タイトル -->
+                    <h2 class="p-3 text-danger"><strong>人狼バトラー（仮）</strong></h2>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main>
+        <div class="login_page">
+            <div class="container">
+                <div class="row mt-1">
+                    <div class="col">
+                        <h2 class="text-light">管理者ページ</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <form-block class="mx-auto">
+                    <input type="text" class="form-control" id="admin_id">
+                    <input type="password" class="form-control mt-1" id="admin_pw">
+                    <button class="btn-danger btn mt-1" id="admin_login_btn">ログイン</button>
+                </form-block>
+            </div>
+        </div>
+        <div class="main_page">
+            <div class="container">
+                <div class="row mt-1">
+                    <div class="col">
+                        <h2 class="text-light">管理者ページ</h2>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="card">
+                            <h4 class="card-header">ルームの削除</h4>
+                            <div class="card-body">
+                                <div class="card-text">
+                                    ルームを削除したい場合はルームボタンを押してください
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col">
+                        <div class="card">
+                            <h4 class="card-header">プレイヤーの削除</h4>
+                            <div class="card-body">
+                                <div class="card-text">
+                                    プレイヤーを削除したい場合はプレイヤーボタンを押してください
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <form-inline class="mx-auto">
+                        <button class="btn btn-danger" id="room_list_btn" data-toggle="modal"
+                            data-target="#room_list_modal">ルーム</button>
+                        <button class="btn btn-danger" id="player_list_btn" data-toggle="modal"
+                            data-target="#player_list_modal">プレイヤー</button>
+                    </form-inline>
+                </div>
+                <div class="row mt-2">
+                    <form-inline class="mx-auto">
+                        <a href="../" class="btn btn-primary">ホームに戻る</a>
+                    </form-inline>
+                </div>
+                <!-- ルームリスト表示用 -->
+                <div class="modal fade" id="room_list_modal" tabindex="-1" role="dialog">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">ルーム</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <!-- 作成されてるルームをここに表示する -->
+                                <div id="room_list" style="height: 200px; overflow-y: scroll;">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- プレイヤーリスト表示用 -->
+                <div class="modal fade" id="player_list_modal" tabindex="-1" role="dialog">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">プレイヤー</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <!-- 作成されてるプレイヤーをここに表示する -->
+                                <div id="player_list" style="height: 200px; overflow-y: scroll;">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
 </body>
 
 </html>

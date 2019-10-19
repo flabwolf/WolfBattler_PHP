@@ -71,6 +71,18 @@
         $db->close();
     }
 
+    // プレイヤーを取得する
+    function get_player_name(){
+        $db = new SQLite3("../db/wolf_battler.db");
+        $players = $db->query("SELECT * FROM players");
+        $player_list = array();
+        while($result = $players->fetchArray(SQLITE3_ASSOC)){
+            $player_list[] = $result["name"];
+        }
+        $db->close();
+        echo(json_encode($player_list,JSON_UNESCAPED_UNICODE));
+    }
+
     // ルーム名を取得する
     function get_room_name(){
         $db = new SQLite3("../db/wolf_battler.db");
@@ -129,6 +141,7 @@
         $db->close();
     }
 
+    // プレイヤー削除
     function del_player($player_name){
         exit_room();
         $db = new SQLite3("../db/wolf_battler.db");
@@ -142,6 +155,7 @@
         case "create_room": create_room(); break;
         case "join_room": join_room(); break;
         case "get_room_name": get_room_name(); break;
+        case "get_player_name": get_player_name(); break;
         case "exit_room": exit_room(); break;
         case "del_player": del_player($_POST["player_name"]); break;
         case "del_room": del_room($_POST["room_name"]); break;
