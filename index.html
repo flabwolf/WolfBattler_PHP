@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <script src="js/index.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <title>WolfBattler_PHP</title>
+</head>
+
+<body class="bg-secondary">
+    <header>
+        <div class="container-fluid bg-dark">
+            <!-- ヘッダー部分 -->
+            <div class="row">
+                <div class="col-12">
+                    <!-- タイトル表示 -->
+                    <h2 class="p-3 text-danger"><strong>人狼バトラー（仮）</strong></h2>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <!-- プレイヤー名表示 -->
+                    <h5 class="float-right text-white">プレイヤー名：<span id="player_name"></span></h5>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main>
+        <div class="create_player">
+            <div class="container">
+                <!-- プレイヤー作成の説明的なやつ -->
+                <div class="row">
+                    <div class="col mx-auto">
+                        <div class="card mt-1">
+                            <h4 class="card-header">プレイヤーの作成</h4>
+                            <div class="card-body">
+                                <div class="card-text">
+                                    ゲーム中に表示するプレイヤー名を作成<br>（※他のプレイヤーは使用している名前は使用できません）
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- プレイヤー名作成用のフォーム -->
+                <div class="row mt-2 no-gutters">
+                    <div class="col-8 mx-auto" id="create_player_form">
+                        <input type="text" id="input_player_name" class="form-control" placeholder="プレイヤー名（20字以内）"
+                            maxlength="20">
+                    </div>
+                    <div class="col-4 mx-auto">
+                        <button id="create_player_name" class="btn btn-danger form-control ml-1">作成</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="start_page">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <!-- ルーム作成の説明的なやつ -->
+                        <div class="card mt-1">
+                            <h4 class="card-header">ルームの作成</h4>
+                            <div class="card-body">
+                                <div class="card-text">
+                                    参加できるルームがなかったり、新しくルームを作成したいときは、ルーム作成ボタンを押そう！<br>
+                                    （※既に使用されている名前は使えません）
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <!-- ルーム参加の説明的なやつ -->
+                        <div class="card mt-1">
+                            <h4 class="card-header">ルームの参加</h4>
+                            <div class="card-body">
+                                <div class="card-text">
+                                    すぐに人狼ゲームを始めたい人は、ルーム参加ボタンを押そう！<br>
+                                    （※ルームがない場合は参加できません）
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-2 no-gutters">
+                    <!-- ルーム作成ボタン -->
+                    <div class="col-5 mx-auto">
+                        <button class="btn btn-primary form-control" id="create_room_link" data-toggle="modal"
+                            data-target="#create_room_form">ルーム作成</button>
+                    </div>
+                    <!-- ルーム参加ボタン -->
+                    <div class="col-5 mx-auto">
+                        <button class="btn btn-primary form-control" id="join_room_link" data-toggle="modal"
+                            data-target="#join_room_modal">ルーム参加</button>
+                    </div>
+                </div>
+                <!-- ルーム作成用のフォーム表示用 -->
+                <div class="modal fade" id="create_room_form" tabindex="-1" role="dialog">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">ルーム作成</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body" id="create_room_mdbody">
+                                <!-- ルームの生成 -->
+                                <input type="text" name="room_name" id="input_room_name" class="form-control"
+                                    placeholder="ルーム名（20字以内）" maxlength="20">
+                            </div>
+                            <div class="modal-footer">
+                                <button id="create_room_btn" class="btn btn-danger">作成</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ルーム参加用のリスト表示用 -->
+                <div class="modal fade" id="join_room_modal" tabindex="-1" role="dialog">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">ルーム一覧</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <!-- 作成されてるルームをここに表示する -->
+                                <div class=" join_room" id="join_room_list" style="height: 200px; overflow-y: scroll;">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>
