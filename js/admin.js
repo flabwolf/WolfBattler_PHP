@@ -89,7 +89,8 @@ function del_room() {
 }
 
 function admin_login() {
-    $("#admin_login_btn").on("click", function () {
+    $("#admin_login_btn").on("click", function (e) {
+        e.preventDefault();
         $admin_id = $("#admin_id").val();
         $admin_pw = $("#admin_pw").val();
         if ($admin_id == "f-lab" & $admin_pw == "suuri4f") {
@@ -115,6 +116,7 @@ function hide_login_page() {
 }
 $(function () {
     hide_main_page();
+    $("#admin_id").focus();
     admin_login();
     $("#player_list_btn").on("click", function () {
         append_player_list();

@@ -1,4 +1,4 @@
 <?php
-    $db = new SQLite3("../db/wolf_battler.db");
-    $db->exec('begin 2>/dev/null');
+    $socket = socket_create_pair(AF_INET, SOCK_STREAM, SOL_TCP);
+    if(!is_resource($socket)) onSocketFailure("Failed to create socket");
 ?>

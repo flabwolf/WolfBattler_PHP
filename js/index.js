@@ -79,7 +79,8 @@ function join_room(room_name) {
 
 // ルーム作成
 function create_room() {
-    $("#create_room_btn").on("click", function () {
+    $("#create_room_btn").on("click", function (e) {
+        e.preventDefault();
         var room_name = $("#input_room_name").val();
         $("#input_room_name").val("");
         $.ajax({
@@ -97,7 +98,8 @@ function create_room() {
                 }
                 else {
                     console.log("既に使用されている名前です");
-                    $("#create_room_mdbody").append("既に使用されています！");
+                    $(".used_name").text("");
+                    $(".used_name").append("既に使用されている名前です！").trigger("create");
                 }
             })
             .fail(function () {
@@ -108,7 +110,8 @@ function create_room() {
 
 // プレイヤー作成
 function create_player_name() {
-    $("#create_player_name").on("click", function () {
+    $("#create_player_name").on("click", function (e) {
+        e.preventDefault();
         var player_name = $("#input_player_name").val();
         $("#input_player_name").val("");
         $.ajax({
@@ -132,7 +135,8 @@ function create_player_name() {
                 }
                 else {
                     console.log("既に使用されている名前です");
-                    $("#create_player_form").append("既に使用されている名前です！").trigger("create");
+                    $(".used_name").text("");
+                    $(".used_name").append("既に使用されている名前です！").trigger("create");
                 }
             })
             .fail(function () {
@@ -204,6 +208,7 @@ window.onload = function () {
 }
 
 $(function () {
+    $("#input_player_name").focus();
     set_player_name();
     create_player_name();
     create_room();

@@ -46,13 +46,19 @@
                     </div>
                 </div>
                 <!-- プレイヤー名作成用のフォーム -->
-                <div class="row mt-2 no-gutters">
-                    <div class="col-8 mx-auto" id="create_player_form">
-                        <input type="text" id="input_player_name" class="form-control" placeholder="プレイヤー名（20字以内）"
-                            maxlength="20">
+                <div class="row mt-2">
+                    <div class="col">
+                        <form class="form-inline mx-auto" id="create_player_form">
+                            <input type="text" id="input_player_name" class="form-control col-8"
+                                placeholder="プレイヤー名（20字以内）" maxlength="20">
+                            <input type="submit" id="create_player_name" class="btn btn-danger form-control col-4"
+                                value="作成">
+                        </form>
                     </div>
-                    <div class="col-4 mx-auto">
-                        <button id="create_player_name" class="btn btn-danger form-control ml-1">作成</button>
+                </div>
+                <div class="row" mt-1>
+                    <div class="col">
+                        <div class="used_name"></div>
                     </div>
                 </div>
             </div>
@@ -111,12 +117,17 @@
                             </div>
                             <div class="modal-body" id="create_room_mdbody">
                                 <!-- ルームの生成 -->
-                                <input type="text" name="room_name" id="input_room_name" class="form-control"
-                                    placeholder="ルーム名（20字以内）" maxlength="20">
-                            </div>
-                            <div class="modal-footer">
-                                <button id="create_room_btn" class="btn btn-danger">作成</button>
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                <form>
+                                    <input type="text" name="room_name" id="input_room_name" class="form-control"
+                                        placeholder="ルーム名（20字以内）" maxlength="20">
+                                    <div class="modal-footer">
+                                        <div class="used_name"></div>
+                                        <input type="submit" value="作成" id="create_room_btn" class="btn btn-danger">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-dismiss="modal">Close</button>
+                                    </div>
+                                </form>
+
                             </div>
                         </div>
                     </div>

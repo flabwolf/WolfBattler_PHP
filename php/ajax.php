@@ -160,11 +160,4 @@
         case "del_player": del_player($_POST["player_name"]); break;
         case "del_room": del_room($_POST["room_name"]); break;
     }
-
-    // $db = new SQLite3("../db/wolf_battler.db");
-    // $result=$db->query('SELECT * FROM rooms');
-    // while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-    //     echo($row["name"]."\n");
-    // }
-    // $db->close();
 ?>

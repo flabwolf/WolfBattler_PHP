@@ -35,19 +35,12 @@
                 <div class="col">
                     <div class="card mt-2">
                         <h4 class="card-header" id="room_name"></h4>
-                        <div class="card-body" style="height: 40vh; overflow-y: scroll;">
-                            <div class="card-text">
-                                ○○：hogehoge
-                            </div>
-                            <div class="card-text">
-                                □□：hogehoge
-                            </div>
-                        </div>
+                        <div class="card-body" style="height: 40vh; overflow-y: scroll;" id="normal_chat_body"></div>
                         <div class="card-footer">
-                            <div class="form-inline mx-auto">
-                                <input type="text" class="col-9 form-control">
-                                <button class="btn btn-primary ml-2">送信</button>
-                            </div>
+                            <form class="form-inline mx-auto">
+                                <input type="text" class="col-9 form-control" id="normal_chat_msg">
+                                <input type="submit" class="btn btn-primary ml-2" id="normal_chat_btn" value="送信">
+                            </form>
                         </div>
                     </div>
                 </div>
