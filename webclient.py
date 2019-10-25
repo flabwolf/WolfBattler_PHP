@@ -1,3 +1,4 @@
+from __future__ import print_function
 import websocket
 from threading import Thread
 import time
@@ -18,24 +19,26 @@ def on_close(ws):
 
 def on_open(ws):
     def run(*args):
-        for i in range(3):
+        #for i in range():
+        while(True):
             # send the message, then wait
             # so thread doesn't exit and socket
             # isn't closed
-            ws.send("Hello %d" % i)
-            time.sleep(1)
+            msg = input()
+            #ws.send("Hello %d" % i)
+            ws.send(msg)
 
         time.sleep(1)
         ws.close()
         print("Thread terminating...")
 
     Thread(target=run).start()
-
+    ws.send("NAHANAHA vs. Gaccho-n battle")
 
 if __name__ == "__main__":
     websocket.enableTrace(True)
     if len(sys.argv) < 2:
-        host = "localhost:3000"
+        host = "ws://localhost:3000"
     else:
         host = sys.argv[1]
     ws = websocket.WebSocketApp(host,
@@ -44,3 +47,14 @@ if __name__ == "__main__":
                                 on_close=on_close)
     ws.on_open = on_open
     ws.run_forever()
+    """
+    websocket.enableTrace(True)
+    ws = websocket.create_connection("ws://localhost:3000")
+    print("Sending 'Hello, World'...")
+    ws.send("Hello, World")
+    print("Sent")
+    print("Receiving...")
+    result = ws.recv()
+    print("Received '%s'" % result)
+    ws.close()
+    """
