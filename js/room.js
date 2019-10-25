@@ -5,7 +5,7 @@ var room_name = ""
 // ウェブソケットの立ち上げ
 function create_web_socket() {
     // var url = "ws://localhost:3000/htmls/room.html?room_name=" + room_name + "&player_name=" + player_name
-    ws = new WebSocket("ws://localhost:3001/htmls/room.html");
+    ws = new WebSocket("ws://localhost:3000/htmls/room.html");
     // ws = new WebSocket("ws://f-server.ibe.kagoshima-u.ac.jp:3000/htmls/room.html");
 
 
