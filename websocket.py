@@ -1,8 +1,13 @@
+import argparse
 from websocket_server import WebsocketServer
 import types
 
-# PORT = 3001
-# PORT = 3000
+parser = argparse.ArgumentParser()
+parser.add_argument("-p", type=int)
+args = parser.parse_args()
+
+# PORT = args.p
+PORT = 3000
 HOST = "localhost"
 # HOST = "http://f-server.ibe.kagoshima-u.ac.jp"
 
