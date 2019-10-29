@@ -4,6 +4,7 @@
             $db = new SQLite3("../db/wolf_battler.db");
             $db->exec("CREATE TABLE rooms(id INTEGER PRIMARY KEY,name text UNIQUE, setting INTEGER)");
             $db->exec('CREATE TABLE players(id INTEGER PRIMARY KEY,name text UNIQUE, agent_id INTEGER, room_id INTEGER)');
+            $db->exec('CREATE TABLE messages(id INTEGER PRIMARY KEY,content text, agent_id INTEGER, room_id INTEGER)');
     
     }
     // プレイヤーの作成
@@ -149,6 +150,28 @@
         $db->close();
     }
 
+    // プレイヤー情報の取得
+    function get_player_info($room_name){
+        $db = new SQLite3("../db/wolf_battler.db");
+        $db->exec("begin");
+        try{
+            $rooms = $db->query("SELECT id FROM rooms WHERE name='$room_name'");
+            $player_list = array();
+            while($result = $rooms->fetchArray(SQLITE3_ASSOC)){
+                $room_id = $result["id"];
+                $players = $db->query("SELECT * FROM players WHERE room_id=$room_id");
+                while($result2 = $players->fetchArray(SQLITE3_ASSOC)){
+                    $player_list[] = $result2["name"];
+                }
+            }
+            echo(json_encode($player_list,JSON_UNESCAPED_UNICODE));
+        }
+        catch(Exception $e){
+            $db->exec('rollback');
+        }
+        
+    }
+
     // 分岐用
     switch($_POST["func"]){
         case "create_player_name": create_player_name(); break;
@@ -159,5 +182,6 @@
         case "exit_room": exit_room(); break;
         case "del_player": del_player($_POST["player_name"]); break;
         case "del_room": del_room($_POST["room_name"]); break;
+        case "get_player_info": get_player_info($_POST{"room_name"}); break;
     }
 ?>
