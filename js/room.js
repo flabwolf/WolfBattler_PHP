@@ -8,7 +8,7 @@ var send_contents;
 // ウェブソケットの立ち上げ
 function create_web_socket() {
     // var url = "ws://localhost:3000/htmls/room.html?room_name=" + room_name + "&player_name=" + player_name
-    ws = new WebSocket("ws://localhost:3000/htmls/room.html/" + room_name);
+    ws = new WebSocket("ws://localhost:3000/htmls/room.html" ); //+ room_name);
     // ws = new WebSocket("ws://f-server.ibe.kagoshima-u.ac.jp:3000/htmls/room.html");
 
 
@@ -18,7 +18,7 @@ function create_web_socket() {
     };
     ws.onmessage = function (e) {
         var receiveData = JSON.parse(e.data)
-        if (receiveData["room_name"] == room_name) {
+        // if (receiveData["room_name"] == room_name) {
             console.log(receiveData)
             if (receiveData["mode"] == "start") {
                 $(".chat_screen").text("");
@@ -29,7 +29,7 @@ function create_web_socket() {
             }
             $(".chat_screen").append("<div class='card-text'>" + receiveData["message"] + "</div>");
             $('.chat_screen').animate({ scrollTop: $('.chat_screen')[0].scrollHeight }, 'fast');
-        }
+        // }
     };
 
     $("#normal_chat_btn").on("click", function (e) {

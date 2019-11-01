@@ -5,6 +5,7 @@ import json
 # PORT = 3001
 PORT = 3000
 HOST = "localhost"
+clientlist = {}
 # HOST = "http://f-server.ibe.kagoshima-u.ac.jp"
 
 # def new_client(client, server):
@@ -23,6 +24,11 @@ def send_msg_allclient(client, server, receive):
 
     if mode == "init":
         send_contents["message"] = player_name + "が入室しました。"
+        if room_name in list(clientlist):
+            clientlist[room_name].append(client)
+        else:
+            clientlist[room_name] = []
+            clientlist[room_name].append(client)
     elif mode == "exit":
         send_contents["message"] = player_name + "が退室しました。"
     elif mode == "normal":
@@ -41,7 +47,9 @@ def send_msg_allclient(client, server, receive):
             send_contents["message"] = "{} ： 私は【{}】に投票します。".format(
                 player_name, message[1])
 
-    server.send_message_to_all(json.dumps(send_contents))
+    #server.send_message_to_all(json.dumps(send_contents))
+    for c in clientlist[room_name]:
+        server.send_message(c,json.dumps(send_contents))
 
 
 server = WebsocketServer(PORT, host=HOST)
