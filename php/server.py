@@ -1,6 +1,7 @@
 from websocket_server import WebsocketServer
 import types
 import json
+#import aiwolfpy
 
 # PORT = 3001
 PORT = 3000
@@ -46,11 +47,15 @@ def send_msg_allclient(client, server, receive):
         elif message[0] == "投票発言":
             send_contents["message"] = "{} ： 私は【{}】に投票します。".format(
                 player_name, message[1])
+    
+    #send_contents["game_setting"] = gamesetting
 
     #server.send_message_to_all(json.dumps(send_contents))
     for c in clientlist[room_name]:
         server.send_message(c,json.dumps(send_contents))
 
+#gm = aiwolfpy.game_master.GameMaster()
+#gamesetting = gm.game_setting
 
 server = WebsocketServer(PORT, host=HOST)
 # server.set_fn_new_client(new_client)

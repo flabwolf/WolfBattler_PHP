@@ -3,12 +3,12 @@
 from __future__ import print_function, division 
 import os,sys
 import argparse
-import websocket
+#import websocket
 #from socket import error as SocketError
 import errno
 import json
 from threading import Thread
-from gameinfoparser import GameInfoParser
+from .gameinfoparser import GameInfoParser
 
 
 def on_message(ws, message):
