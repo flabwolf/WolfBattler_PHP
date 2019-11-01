@@ -121,7 +121,7 @@ function set_select_val() {
             $("#third_choice").append("<option>村人</option>");
             $("#third_choice").append("<option>占い師</option>");
             $("#third_choice").append("<option>狂人</option>");
-            $("#third_choice").append("<option'>人狼</option>");
+            $("#third_choice").append("<option>人狼</option>");
         }
         else if (first == "推定発言") {
             $("#third_choice").show();
@@ -134,7 +134,7 @@ function set_select_val() {
             $("#third_choice").append("<option>村人</option>");
             $("#third_choice").append("<option>占い師</option>");
             $("#third_choice").append("<option>狂人</option>");
-            $("#third_choice").append("<option'>人狼</option>");
+            $("#third_choice").append("<option>人狼</option>");
 
         }
         else if (first == "投票発言") {
