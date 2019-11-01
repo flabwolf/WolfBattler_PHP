@@ -99,13 +99,16 @@ day    type  idx  turn  agent                           text
         """
         return 0
 
-    def game_initialize(self):
+    def game_initialize(self,room_name,player_name):
+        print(room_name)
         dbname = 'WolfBattler_PHP\db\wolf_battler.db'
         with closing(sqlite3.connect(dbname)) as conn:
             c = conn.cursor()
             #select_sql = 'select * from players'
-            room_id = 'select * from players where room_id = 1'
-            players = list(c.execute(room_id))
+            room_id = list(c.execute("select * from rooms where name = '%s'"%room_name))
+            select_sql = "select * from players where room_id = '%d'"%room_id[0][0]
+            players = list(c.execute(select_sql))
+            #print(players)
 
             RoleMap = dict()
             status = dict()
@@ -113,7 +116,7 @@ day    type  idx  turn  agent                           text
             for row in players:
                 RoleMap[str(row[2])] = rolelist.pop(random.randint(0,len(rolelist)-1))
                 status[str(row[2])] = 'ALIVE'
-            print(RoleMap)
+            #print(RoleMap)
 
             infomap = dict()
             infomap_all = dict()
@@ -126,8 +129,10 @@ day    type  idx  turn  agent                           text
                 infomap['remainWhisperMap'] = {}
                 infomap['day'] = 0
 
-                infomap_all[row[2]] = copy.copy(infomap)
-            print(infomap_all[1])
+                infomap_all[row[1]] = copy.copy(infomap)
+            #print(infomap_all[1])
+
+            return infomap_all
 
             msg = dict()
             msg['gameInfo'] = infomap_all[1]
