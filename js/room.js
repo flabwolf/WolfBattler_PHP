@@ -2,40 +2,48 @@ var flag = true;
 var player_name;
 var room_name;
 var player_info;
-var first, second, third
+var first, second, third;
+var send_contents;
 
 // ウェブソケットの立ち上げ
 function create_web_socket() {
     // var url = "ws://localhost:3000/htmls/room.html?room_name=" + room_name + "&player_name=" + player_name
-    ws = new WebSocket("ws://localhost:3000/htmls/room.html");
+    ws = new WebSocket("ws://localhost:3000/htmls/room.html/" + room_name);
     // ws = new WebSocket("ws://f-server.ibe.kagoshima-u.ac.jp:3000/htmls/room.html");
 
 
     ws.onopen = function () {
-        ws.send(player_name + "が入室しました");
-        // ws.send("Hello");
+        ws.send(JSON.stringify(send_contents));
+        send_contents["mode"] = "normal"
     };
     ws.onmessage = function (e) {
-        console.log(e.data);
-        if (e.data == "ゲームを開始しました。") {
-            $(".game_before").hide();
-            $(".game_after").show();
-            set_room_name();
-            get_player_info();
+        var receiveData = JSON.parse(e.data)
+        if (receiveData["room_name"] == room_name) {
+            console.log(receiveData)
+            if (receiveData["mode"] == "start") {
+                $(".chat_screen").text("");
+                $(".game_before").hide();
+                $(".game_after").show();
+                set_room_name();
+                get_player_info();
+            }
+            $(".chat_screen").append("<div class='card-text'>" + receiveData["message"] + "</div>");
+            $('.chat_screen').animate({ scrollTop: $('.chat_screen')[0].scrollHeight }, 'fast');
         }
-        $(".chat_screen").append("<div class='card-text'>" + e.data + "</div>");
-        $('.chat_screen').animate({ scrollTop: $('.chat_screen')[0].scrollHeight }, 'fast');
     };
 
     $("#normal_chat_btn").on("click", function (e) {
         e.preventDefault();
         var msg = $("#normal_chat_msg").val();
         $("#normal_chat_msg").val("");
-        ws.send(player_name + " > " + msg);
+        send_contents["message"] = msg;
+
+        ws.send(JSON.stringify(send_contents));
     });
     $(window).on("beforeunload", function () {
         logout_player();
-        ws.send(player_name + "が退室しました");
+        send_contents["mode"] = "exit";
+        ws.send(JSON.stringify(send_contents));
         ws.close();
     });
 
@@ -43,6 +51,7 @@ function create_web_socket() {
 
     game_start();
 }
+
 
 // ルーム名をセットする
 function set_room_name() {
@@ -101,11 +110,8 @@ function exit_room() {
 // ゲーム開始ボタン
 function game_start() {
     $("#game_start_btn").on("click", function () {
-        // $(".game_before").hide();
-        // $(".game_after").show();
-        // set_room_name();
-        // get_player_info();
-        ws.send("ゲームを開始しました。");
+        send_contents["mode"] = "start"
+        ws.send(JSON.stringify(send_contents));
     });
 }
 
@@ -171,22 +177,23 @@ function get_player_info() {
 function speak() {
     $("#game_chat_btn").on("click", function () {
         first = $("#first_choice").val();
+        send_contents["mode"] = "play";
         console.log(first, second, third)
         if (first == "カミングアウト") {
             third = $("#third_choice").val();
-            console.log(first, second, third)
-            ws.send(first + " " + player_name + " " + third);
+            send_contents["message"] = [first, third];
+            ws.send(JSON.stringify(send_contents));
         }
         else if (first == "推定発言") {
             second = $("#second_choice").val();
             third = $("#third_choice").val();
-            console.log(first, second, third)
-            ws.send(first + " " + player_name + " " + second + " " + third);
+            send_contents["message"] = [first, second, third];
+            ws.send(JSON.stringify(send_contents));
         }
         else if (first == "投票発言") {
             second = $("#second_choice").val();
-            console.log(first, second, third)
-            ws.send(first + " " + player_name + " " + second);
+            send_contents["message"] = [first, second];
+            ws.send(JSON.stringify(send_contents));
         }
     });
 }
@@ -196,6 +203,7 @@ $(function () {
     var urlParams = new URLSearchParams(window.location.search);
     player_name = urlParams.get("player_name");
     room_name = urlParams.get("room_name");
+    send_contents = { "player_name": player_name, "room_name": room_name, "message": "", "mode": "init" };
     create_web_socket();
     set_room_name();
     set_player_name();
