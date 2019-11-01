@@ -30,29 +30,70 @@
     </header>
 
     <main>
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col">
-                    <div class="card mt-2">
-                        <h4 class="card-header" id="room_name"></h4>
-                        <div class="card-body" style="height: 40vh; overflow-y: scroll;" id="normal_chat_body"></div>
-                        <div class="card-footer">
-                            <form class="form-inline mx-auto">
-                                <input type="text" class="col-9 form-control" id="normal_chat_msg">
-                                <input type="submit" class="btn btn-primary ml-2" id="normal_chat_btn" value="送信">
-                            </form>
+        <div class="game_before">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col">
+                        <div class="card mt-2">
+                            <h4 class="card-header room_name" id="room_name"></h4>
+                            <div class="card-body chat_screen" style="height: 40vh; overflow-y: scroll;">
+                            </div>
+                            <div class="card-footer">
+                                <form class="form-inline mx-auto">
+                                    <input type="text" class="col-9 form-control" id="normal_chat_msg">
+                                    <input type="submit" class="btn btn-primary ml-2" id="normal_chat_btn" value="送信">
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row mt-3">
+                    <form-inline class="mx-auto">
+                        <button class="btn btn-danger" id="game_start_btn">開始</button>
+                        <button class="btn btn-danger" id="exit_room_btn">退出</button>
+                    </form-inline>
+                </div>
+            </div>
+        </div>
+        <div class="game_after">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col">
+                        <div class="card mt-2">
+                            <h4 class="card-header room_name" id="room_name"></h4>
+                            <div class="card-body chat_screen" style="height: 40vh; overflow-y: scroll;">
+                            </div>
+                            <div class="card-footer">
+                                <div class="row">
+                                    <div class="col form-inline">
+                                        <select class="form-control col-4" id="first_choice">
+                                            <option>カミングアウト</option>
+                                            <option>推定発言</option>
+                                            <option>投票発言</option>
+                                        </select>
+                                        <select class="form-control col-4" id="second_choice"></select>
+                                        <select class="form-control col-4" id="third_choice">
+                                            <option>村人</option>
+                                            <option>占い師</option>
+                                            <option>狂人</option>
+                                            <option>人狼</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mt-1">
+                                    <div class="col">
+                                        <input type="submit" class="btn btn-primary form-control" id="game_chat_btn"
+                                            value="発言する">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="container">
-            <div class="row mt-3">
-                <form-inline class="mx-auto">
-                    <button class="btn btn-danger">開始</button>
-                    <button class="btn btn-danger" id="exit_room_btn">退出</button>
-                </form-inline>
-            </div>
         </div>
     </main>
     <footer></footer>
