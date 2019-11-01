@@ -6,6 +6,7 @@ import sys
 
 
 def on_message(ws, message):
+    print(time.time())
     print(message)
 
 
@@ -33,7 +34,7 @@ def on_open(ws):
         print("Thread terminating...")
 
     Thread(target=run).start()
-    ws.send("NAHANAHA vs. Gaccho-n battle")
+    #ws.send("NAHANAHA vs. Gaccho-n battle")
 
 if __name__ == "__main__":
     websocket.enableTrace(True)
