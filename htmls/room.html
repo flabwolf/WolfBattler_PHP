@@ -38,11 +38,11 @@
                         <div class="card-body chat_screen" style="height: 40vh; overflow-y: scroll;">
                         </div>
                         <div class="card-footer">
-                            <form class="form-inline mx-auto game_before">
+                            <form class="form-inline mx-auto free">
                                 <input type="text" class="col-9 form-control" id="normal_chat_msg">
                                 <input type="submit" class="btn btn-primary ml-2" id="normal_chat_btn" value="送信">
                             </form>
-                            <div class="row game_after">
+                            <div class="row talk">
                                 <div class="col form-inline">
                                     <select class="form-control col-4" id="first_choice">
                                         <option>カミングアウト</option>
@@ -58,10 +58,43 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="row mt-1 game_after">
+                            <div class="row mt-1 talk">
                                 <div class="col">
                                     <input type="submit" class="btn btn-primary form-control" id="game_chat_btn"
                                         value="発言する">
+                                </div>
+                            </div>
+                            <div class="row vote">
+                                <div class="col form-inline">
+                                    <select class="form-control col" id="vote_list"></select>
+                                </div>
+                            </div>
+                            <div class="row mt-1 vote">
+                                <div class="col">
+                                    <input type="submit" class="btn btn-primary form-control" id="vote_btn"
+                                        value="投票する">
+                                </div>
+                            </div>
+                            <div class="row divine">
+                                <div class="col form-inline">
+                                    <select class="form-control col" id="divine_list"></select>
+                                </div>
+                            </div>
+                            <div class="row mt-1 divine">
+                                <div class="col">
+                                    <input type="submit" class="btn btn-primary form-control" id="divine_btn"
+                                        value="占う">
+                                </div>
+                            </div>
+                            <div class="row attack">
+                                <div class="col form-inline">
+                                    <select class="form-control col" id="attack_list"></select>
+                                </div>
+                            </div>
+                            <div class="row mt-1 attack">
+                                <div class="col">
+                                    <input type="submit" class="btn btn-primary form-control" id="attack_btn"
+                                        value="襲撃する">
                                 </div>
                             </div>
                         </div>

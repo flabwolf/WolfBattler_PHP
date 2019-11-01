@@ -26,12 +26,12 @@ def send_msg_allclient(client, server, receive):
     if mode == "init":
         send_contents["message"] = player_name + "が入室しました。"
         if room_name in list(clientlist):
-            #clientlist[room_name]["clients"].append(client)
+            # clientlist[room_name]["clients"].append(client)
             clientlist[room_name][player_name] = client
         else:
             clientlist[room_name] = {}
             #clientlist[room_name]["clients"] = []
-            #clientlist[room_name]["clients"].append(client)
+            # clientlist[room_name]["clients"].append(client)
             clientlist[room_name][player_name] = client
     elif mode == "exit":
         send_contents["message"] = player_name + "が退室しました。"
@@ -40,11 +40,11 @@ def send_msg_allclient(client, server, receive):
     elif mode == "start":
         send_contents["message"] = "ゲームを開始します。"
         send_contents["mode"] = "start"
-        infomap_all = gm.game_initialize(room_name,player_name)
-        for k,c in infomap_all.items():
-            server.send_message(clientlist[room_name][k],json.dumps(c))
+        infomap_all = gm.game_initialize(room_name, player_name)
+        for k, c in infomap_all.items():
+            server.send_message(clientlist[room_name][k], json.dumps(c))
         pass
-    elif mode == "play":
+    elif mode == "talk":
         if message[0] == "カミングアウト":
             send_contents["message"] = "{} ： 私は【{}】です。".format(
                 player_name, message[1])
@@ -54,12 +54,23 @@ def send_msg_allclient(client, server, receive):
         elif message[0] == "投票発言":
             send_contents["message"] = "{} ： 私は【{}】に投票します。".format(
                 player_name, message[1])
-    
+    elif mode == "vote":
+        send_contents["message"] = "{} ： 【{}】に投票".format(
+            player_name, message)
+    elif mode == "divine":
+        result = "人間"  # 人狼か人間
+        send_contents["message"] = "{} ： 【{}】は【{}】です".format(
+            player_name, message, result)
+    elif mode == "attack":
+        send_contents["message"] = "{} ： 【{}】を襲撃します。".format(
+            player_name, message)
+
     #send_contents["game_setting"] = gamesetting
 
-    #server.send_message_to_all(json.dumps(send_contents))
-    for k,c in clientlist[room_name].items():
-        server.send_message(c,json.dumps(send_contents))
+    # server.send_message_to_all(json.dumps(send_contents))
+    for k, c in clientlist[room_name].items():
+        server.send_message(c, json.dumps(send_contents))
+
 
 gm = aiwolfpy.game_master.GameMaster()
 gamesetting = gm.game_setting

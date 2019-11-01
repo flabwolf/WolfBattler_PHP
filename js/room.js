@@ -8,9 +8,8 @@ var send_contents;
 // ウェブソケットの立ち上げ
 function create_web_socket() {
     // var url = "ws://localhost:3000/htmls/room.html?room_name=" + room_name + "&player_name=" + player_name
-    ws = new WebSocket("ws://localhost:3000/htmls/room.html" ); //+ room_name);
+    ws = new WebSocket("ws://localhost:3000/htmls/room.html");
     // ws = new WebSocket("ws://f-server.ibe.kagoshima-u.ac.jp:3000/htmls/room.html");
-
 
     ws.onopen = function () {
         ws.send(JSON.stringify(send_contents));
@@ -19,16 +18,52 @@ function create_web_socket() {
     ws.onmessage = function (e) {
         var receiveData = JSON.parse(e.data)
         // if (receiveData["room_name"] == room_name) {
-            console.log(receiveData)
-            if (receiveData["mode"] == "start") {
-                $(".chat_screen").text("");
-                $(".game_before").hide();
-                $(".game_after").show();
-                set_room_name();
-                get_player_info();
-            }
-            $(".chat_screen").append("<div class='card-text'>" + receiveData["message"] + "</div>");
-            $('.chat_screen').animate({ scrollTop: $('.chat_screen')[0].scrollHeight }, 'fast');
+        console.log(receiveData)
+        // ゲーム開始時
+        if (receiveData["mode"] == "start") {
+            $(".chat_screen").text("");
+            $(".free").hide();
+            $(".divine");
+            $(".vote");
+            $(".attack");
+            $(".talk").show();
+            get_player_info();
+        }
+        // 投票フェイズ時
+        else if (receiveData["mode"] == "vote") {
+            $(".chat_screen").text("");
+            $(".talk").hide();
+            $(".free").hide();
+            $(".divine").hide();
+            $(".attack").hide();
+            $(".vote").show();
+            get_player_info();
+            set_vote_list();
+        }
+        // 占いフェイズ時
+        else if (receiveData["mode"] == "divine") {
+            $(".chat_screen").text("");
+            $(".talk").hide();
+            $(".free").hide();
+            $(".divine").show();
+            $(".attack").hide();
+            $(".vote").hide();
+            get_player_info();
+            set_divine_list();
+        }
+        // 襲撃フェーズ時
+        else if (receiveData["mode"] == "divine") {
+            $(".chat_screen").text("");
+            $(".talk").hide();
+            $(".free").hide();
+            $(".divine").hide();
+            $(".attack").show();
+            $(".vote").hide();
+            get_player_info();
+            set_divine_list();
+        }
+        $(".chat_screen").append("<div class='card-text'>" + receiveData["message"] + "</div>");
+        $('.chat_screen').animate({ scrollTop: $('.chat_screen')[0].scrollHeight }, 'fast');
         // }
     };
 
@@ -46,10 +81,11 @@ function create_web_socket() {
         ws.send(JSON.stringify(send_contents));
         ws.close();
     });
-
-    speak();
-
     game_start();
+    speak();
+    vote();
+    divine();
+    attack();
 }
 
 
@@ -154,6 +190,60 @@ function set_select_val() {
     });
 }
 
+// 投票先の名前をセットする
+function set_vote_list() {
+    $("#vote_list").val();
+    player_info.forEach(function (data) {
+        $("#vote_list").append("<option class='target_name'>" + data + "</option>");
+    });
+}
+
+// 投票する
+function vote() {
+    $("#vote_btn").on("click", function () {
+        send_contents["mode"] = "vote";
+        var target = $("#vote_list").val();
+        send_contents["message"] = target;
+        ws.send(JSON.stringify(send_contents));
+    });
+}
+
+// 占い先をセットする
+function set_divine_list() {
+    $("#divine_list").val();
+    player_info.forEach(function (data) {
+        $("#divine_list").append("<option class='target_name'>" + data + "</option>");
+    });
+}
+
+// 投票する
+function divine() {
+    $("#divine_btn").on("click", function () {
+        send_contents["mode"] = "divine";
+        var target = $("#divine_list").val();
+        send_contents["message"] = target;
+        ws.send(JSON.stringify(send_contents));
+    });
+}
+
+// 襲撃先をセットする
+function set_attack_list() {
+    $("#attack_list").val();
+    player_info.forEach(function (data) {
+        $("#attack_list").append("<option class='target_name'>" + data + "</option>");
+    });
+}
+
+// 投票する
+function attack() {
+    $("#attack_btn").on("click", function () {
+        send_contents["mode"] = "attack";
+        var target = $("#attack_list").val();
+        send_contents["message"] = target;
+        ws.send(JSON.stringify(send_contents));
+    });
+}
+
 // ルーム内のプレイヤー情報取得
 function get_player_info() {
     $.ajax({
@@ -177,7 +267,7 @@ function get_player_info() {
 function speak() {
     $("#game_chat_btn").on("click", function () {
         first = $("#first_choice").val();
-        send_contents["mode"] = "play";
+        send_contents["mode"] = "talk";
         console.log(first, second, third)
         if (first == "カミングアウト") {
             third = $("#third_choice").val();
@@ -199,7 +289,10 @@ function speak() {
 }
 
 $(function () {
-    $(".game_after").hide();
+    $(".vote").hide();
+    $(".talk").hide();
+    $(".divine").hide();
+    $(".attack").hide();
     var urlParams = new URLSearchParams(window.location.search);
     player_name = urlParams.get("player_name");
     room_name = urlParams.get("room_name");
