@@ -4,9 +4,6 @@ from __future__ import print_function, division
 # this is main script
 # simple version
 
-import aiwolfpy
-import aiwolfpy.contentbuilder as cb
-
 myname = 'simple'
 
 class SampleAgent(object):

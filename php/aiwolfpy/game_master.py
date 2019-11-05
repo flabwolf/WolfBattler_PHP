@@ -5,12 +5,14 @@ import copy
 import json
 import sqlite3
 
+from . import agent
+from .npc_perse import connect_parse
 
 class GameMaster(object):
     def __init__(self):
-        self.room_flag = True
         self.game_run = True
 
+        self.NpcList = []
         self.msg = dict()
         self.infomap_all = dict()
         self.RoleMap = dict()
@@ -84,13 +86,15 @@ class GameMaster(object):
             # print(players)
 
             while(len(players)!=5):
-                # PCが5人に満たないときはNPCを追加する。
-                # 召喚は出来てない(11/5現在)
+                # PCが5人に満たないときはNPCを召喚する。
                 # print('NPC append')
                 p_id = len(players)+1
-                NPC = (random.randint(0,100),'NPC-'+str(p_id),p_id,room_id[0][0])
+                npc_name = 'NPC-'+str(p_id)
+                NPC = (random.randint(0,100),npc_name,p_id,room_id[0][0])
                 players.append(NPC)
-            # print(players)
+                npc_agent = agent.SampleAgent(npc_name)
+                self.NpcList.append(npc_agent)
+            #print(self.NpcList)
 
             rolelist = ['VILLAGER', 'VILLAGER',
                         'SEER', 'POSSESSED', 'WEREWOLF']
@@ -150,16 +154,25 @@ class GameMaster(object):
         self.request = "TALK"
         pass
 
-    def create_msg(self):
+    def create_msg(self,player_name):
         # PCには 'request' 'gameInfo' さえ渡せていればよさそう
         # NPCには以下のデータを渡す。whisperHistoryはNoneのまま
-        self.game_data = {
-            'gameInfo': None,
-            'talkHistory': None,
-            'whisperHistory': None,
-            'request': None,
-            'gameSetting': self.game_setting,
-        }
+        if self.request == 'INITIALIZE' :
+            self.game_data = {
+                'gameInfo': self.infomap_all[player_name],
+                'gameSetting': self.game_setting,
+                'request': self.request,
+                'talkHistory': None,
+                'whisperHistory': None,
+            }
+        else :
+            self.game_data = {
+                'gameInfo': self.infomap_all[player_name],
+                'gameSetting': None,
+                'request': self.request,
+                'talkHistory': None,
+                'whisperHistory': None,
+            }
 
     def request_gen(self):
         """
@@ -192,9 +205,11 @@ class GameMaster(object):
 if __name__ == '__main__':
     gm = GameMaster()
     """
-    info = gm.game_initialize('Room3')
-    div = gm.gm_divine(3)
-    atk = gm.gm_attack(3)
-    print(gm.status)
-    print(div)
+    gm.game_initialize
+    gm.daily_initialize
+    gm.daily_finish
+    gm.gm_divine
+    gm.daily_initialize
+    gm.gm_talk
+    gm.daily_finish
     """
