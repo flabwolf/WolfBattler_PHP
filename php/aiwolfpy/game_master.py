@@ -1,4 +1,4 @@
-#from websocket_server import WebsocketServer
+# from websocket_server import WebsocketServer
 from contextlib import closing
 import random
 import copy
@@ -11,10 +11,31 @@ class GameMaster(object):
         self.room_flag = True
         self.game_run = True
 
+        self.msg = dict()
         self.infomap_all = dict()
         self.RoleMap = dict()
         self.status = dict()
         self.request = "NAME"
+        self.infomap = {
+                'day':0,
+                'talkList':[],
+                'voteList':[],
+                'whisperList':[],
+                'divineResult':None,
+
+                'mediumResult':None,
+                'attackVoteList':[],
+                'attackedAgent':-1,
+                'cursedFox':-1,
+                'executedAgent':-1,
+                'existingRoleList':['POSSESSED','SEER','VILLAGER','WEREWOLF'],
+                'guardedAgent':-1,
+                'lastDaedAgentList':[],
+                'latestAttackVoteList':[],
+                'latestExecutedAgent':-1,
+                'latestVoteList':[],
+        }
+        # game_setting:INITIALIZE時のみ必要。それ以外はNoneでいい
         self.game_setting = {
             'enableNoAttack': False,
             'enableNoExecution': False,
@@ -64,7 +85,8 @@ class GameMaster(object):
 
             while(len(players)!=5):
                 # PCが5人に満たないときはNPCを追加する。
-                print('NPC append')
+                # 召喚は出来てない(11/5現在)
+                # print('NPC append')
                 p_id = len(players)+1
                 NPC = (random.randint(0,100),'NPC-'+str(p_id),p_id,room_id[0][0])
                 players.append(NPC)
@@ -77,24 +99,22 @@ class GameMaster(object):
                 self.RoleMap[str(row[2])] = rolelist.pop(
                     random.randint(0, len(rolelist)-1))
                 self.status[str(row[2])] = 'ALIVE'
-            print(self.RoleMap)
-            print(self.status)
+            # print(self.RoleMap)
+            # print(self.status)
 
-            infomap = dict()
             for row in players:
-                infomap['agentIdx'] = row[2]
-                infomap['myRole'] = self.RoleMap[str(row[2])]
-                infomap['roleMap'] = {str(infomap['agentIdx']): infomap['myRole']}
-                infomap['self.statusMap'] = self.status
-                infomap['remainTalkMap'] = {
+                self.infomap['agentIdx'] = row[2]
+                self.infomap['myRole'] = self.RoleMap[str(row[2])]
+                self.infomap['roleMap'] = {str(self.infomap['agentIdx']): self.infomap['myRole']}
+                self.infomap['statusMap'] = self.status
+                self.infomap['remainTalkMap'] = {
                     '1': 10, '2': 10, '3': 10, '4': 10, '5': 10}
-                infomap['remainWhisperMap'] = {}
-                infomap['day'] = 0
+                self.infomap['remainWhisperMap'] = {str(row[2]):10} if self.infomap['myRole'] == 'WEREWOLF' else {}
 
-                self.infomap_all[row[1]] = copy.copy(infomap)
+                self.infomap_all[row[1]] = copy.copy(self.infomap)
             # print(self.infomap_all)
 
-            return self.infomap_all
+            return self.infomap_all,self.request
 
     def daily_initialize(self):
         self.request = "DAILY_INITIALIZE"
