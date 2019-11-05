@@ -42,8 +42,10 @@ def send_msg_allclient(client, server, receive):
         send_contents["mode"] = "start"
         infomap_all = gm.game_initialize(room_name)
         for k, c in infomap_all.items():
-            server.send_message(clientlist[room_name][k], json.dumps(c))
-        pass
+            try:
+                server.send_message(clientlist[room_name][k], json.dumps(c))
+            except KeyError:
+                pass
     elif mode == "talk":
         if message[0] == "カミングアウト":
             send_contents["message"] = "{} ： 私は【{}】です。".format(

@@ -52,7 +52,7 @@ class GameMaster(object):
         # print(room_name)
 
         self.request = "INITIALIZE"
-        dbname = "db\wolf_battler.db"
+        dbname = "db/wolf_battler.db"
         with sqlite3.connect(dbname) as conn:
             c = conn.cursor()
             #select_sql = 'select * from players'
@@ -171,8 +171,10 @@ class GameMaster(object):
 
 if __name__ == '__main__':
     gm = GameMaster()
+    """
     info = gm.game_initialize('Room3')
     div = gm.gm_divine(3)
     atk = gm.gm_attack(3)
     print(gm.status)
     print(div)
+    """
