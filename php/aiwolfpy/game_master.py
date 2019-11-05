@@ -12,7 +12,6 @@ class GameMaster(object):
     def __init__(self):
         self.game_run = True
 
-        self.NpcList = []
         self.msg = dict()
         self.infomap_all = dict()
         self.RoleMap = dict()
@@ -85,6 +84,7 @@ class GameMaster(object):
             players = list(c.execute(select_sql))
             # print(players)
 
+            self.NpcList = []
             while(len(players)!=5):
                 # PCが5人に満たないときはNPCを召喚する。
                 # print('NPC append')
@@ -93,8 +93,8 @@ class GameMaster(object):
                 NPC = (random.randint(0,100),npc_name,p_id,room_id[0][0])
                 players.append(NPC)
                 npc_agent = agent.SampleAgent(npc_name)
-                self.NpcList.append(npc_agent)
-            #print(self.NpcList)
+                self.NpcList.append([npc_agent,npc_name])
+            # print(self.NpcList)
 
             rolelist = ['VILLAGER', 'VILLAGER',
                         'SEER', 'POSSESSED', 'WEREWOLF']
@@ -116,12 +116,17 @@ class GameMaster(object):
                 self.infomap['remainWhisperMap'] = {str(row[2]):10} if self.infomap['myRole'] == 'WEREWOLF' else {}
 
                 self.infomap_all[row[1]] = copy.copy(self.infomap)
-            # print(self.infomap_all)
+            
+            for npc in self.NpcList :
+                self.create_msg(npc[1])
 
-            return self.infomap_all,self.request
+            # print(self.infomap_all)
+            # return self.infomap_all,self.request
 
     def daily_initialize(self):
         self.request = "DAILY_INITIALIZE"
+        for npc in self.NpcList:
+            self.create_msg(npc[1])
         pass
     
     def daily_finish(self):
@@ -134,12 +139,13 @@ class GameMaster(object):
 
     def gm_attack(self,agent):
         self.request = "ATTACK"
-        self.status[str(agent)] = 'DEAD'
+        self.status[agent] = 'DEAD'
         return True
 
     def gm_divine(self,agent):
         self.request = "DIVINE"
-        role = self.RoleMap[str(agent)]
+
+        role = self.RoleMap[agent]
         if role == 'WEREWOLF':
             return role
         else:
@@ -147,7 +153,7 @@ class GameMaster(object):
 
     def gm_vote(self,agent):
         self.request = "VOTE"
-        self.status[str(agnet)] = 'DEAD'
+        self.status[agent] = 'DEAD'
         return True
 
     def gm_talk(self):
@@ -201,6 +207,15 @@ class GameMaster(object):
         4    2  finish    5     0      5   COMINGOUT Agent[05] VILLAGER
         """
         return 0
+
+    def GameStart(self, room_name):
+        self.game_initialize(room_name)
+        seer = [k for k, v in self.RoleMap.items() if v == 'SEER']
+        wolf = [k for k, v in self.RoleMap.items() if v == 'WEREWOLF']
+        self.daily_initialize()
+        self.daily_finish()
+        self.infomap['divineResult'] = self.gm_divine(seer)
+        self.gm_attack(wolf)
 
 if __name__ == '__main__':
     gm = GameMaster()
