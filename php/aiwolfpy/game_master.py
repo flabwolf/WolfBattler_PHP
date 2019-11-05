@@ -1,11 +1,8 @@
-import argparse
 #from websocket_server import WebsocketServer
 from contextlib import closing
 import random
 import copy
 import json
-import pandas as pd
-import types
 import sqlite3
 
 
@@ -14,6 +11,10 @@ class GameMaster(object):
         self.room_flag = True
         self.game_run = True
 
+        self.infomap_all = dict()
+        self.RoleMap = dict()
+        self.status = dict()
+        self.request = "NAME"
         self.game_setting = {
             'enableNoAttack': False,
             'enableNoExecution': False,
@@ -26,7 +27,7 @@ class GameMaster(object):
             'maxWhisper': 10,
             'maxWhisperTurn': 20,
             'playerNum': 5,
-            'randomSeed': random.randint(0, 3000),
+            'randomSeed': random.randint(0, 10000),
             'roleNumMap': {
                 'WEREWOLF': 1,
                 'POSSESSED': 1,
@@ -46,63 +47,12 @@ class GameMaster(object):
             'whisperBeforeRevote': False
         }
 
-    def game_server(self):
-        parser = argparse.ArgumentParser()
-        parser.add_argument("-p", type=int)
-        args = parser.parse_args()
+    def game_initialize(self, room_name):
+        # ゲーム開始に呼び出す
+        # print(room_name)
 
-        # PORT = args.p
-        PORT = 3000
-        HOST = "localhost"
-        # HOST = "http://f-server.ibe.kagoshima-u.ac.jp"
-
-        # def new_client(client, server):
-        #     server.send_message_to_all("Hey all, a new client has joined us")
-
-        server = WebsocketServer(PORT, host=HOST)
-        # server.set_fn_new_client(new_client)
-        # server.set_fn_message_received(send_msg_allclient)
-        server.set_fn_message_received(send_msg)
-        server.run_forever()
-
-    def create_msg(self):
-        self.msg = {
-            'gameInfo': 4,
-            'talkHistory': 'test',
-            'whisperHistory': 'test',
-            'request': "NAME",
-            'gameSetting': None,
-        }
-
-    def request_gen(self):
-        """
-        what requests:
-        NAME ROLE INITIALIZE DAILY_INITIALIZE DAILY_FINISH
-        FINISH VOTE ATTACK DIVINE GUARD TALK WHISPER
-        """
-        if self.room_flag:
-            self.room_flag = False
-            return "NAME"
-
-        elif self.game_run:
-            self.game_run = False
-            return "INITIALIZE"
-
-    def diff_gen(self):
-        """
-        pandas dataflame
-day    type  idx  turn  agent                           text
-0    2  finish    1     0      1  COMINGOUT Agent[01] POSSESSED
-1    2  finish    2     0      2   COMINGOUT Agent[02] VILLAGER
-2    2  finish    3     0      3       COMINGOUT Agent[03] SEER
-3    2  finish    4     0      4   COMINGOUT Agent[04] WEREWOLF
-4    2  finish    5     0      5   COMINGOUT Agent[05] VILLAGER
-        """
-        return 0
-
-    def game_initialize(self, room_name, player_name):
-        print(room_name)
-        dbname = 'db\wolf_battler.db'
+        self.request = "INITIALIZE"
+        dbname = "db\wolf_battler.db"
         with sqlite3.connect(dbname) as conn:
             c = conn.cursor()
             #select_sql = 'select * from players'
@@ -112,49 +62,117 @@ day    type  idx  turn  agent                           text
             players = list(c.execute(select_sql))
             # print(players)
 
-            RoleMap = dict()
-            status = dict()
+            while(len(players)!=5):
+                # PCが5人に満たないときはNPCを追加する。
+                print('NPC append')
+                p_id = len(players)+1
+                NPC = (random.randint(0,100),'NPC-'+str(p_id),p_id,room_id[0][0])
+                players.append(NPC)
+            # print(players)
+
             rolelist = ['VILLAGER', 'VILLAGER',
                         'SEER', 'POSSESSED', 'WEREWOLF']
             for row in players:
-                RoleMap[str(row[2])] = rolelist.pop(
+                # 役職をランダムに割り当て、全員生存状態にしておく
+                self.RoleMap[str(row[2])] = rolelist.pop(
                     random.randint(0, len(rolelist)-1))
-                status[str(row[2])] = 'ALIVE'
-            # print(RoleMap)
+                self.status[str(row[2])] = 'ALIVE'
+            print(self.RoleMap)
+            print(self.status)
 
             infomap = dict()
-            infomap_all = dict()
             for row in players:
-                infomap['agent'] = row[2]
-                infomap['myRole'] = RoleMap[str(row[2])]
-                infomap['RoleMap'] = {str(infomap['agent']): infomap['myRole']}
-                infomap['statusMap'] = status
+                infomap['agentIdx'] = row[2]
+                infomap['myRole'] = self.RoleMap[str(row[2])]
+                infomap['roleMap'] = {str(infomap['agentIdx']): infomap['myRole']}
+                infomap['self.statusMap'] = self.status
                 infomap['remainTalkMap'] = {
                     '1': 10, '2': 10, '3': 10, '4': 10, '5': 10}
                 infomap['remainWhisperMap'] = {}
                 infomap['day'] = 0
 
-                infomap_all[row[1]] = copy.copy(infomap)
-            # print(infomap_all[1])
+                self.infomap_all[row[1]] = copy.copy(infomap)
+            # print(self.infomap_all)
 
-            return infomap_all
+            return self.infomap_all
 
-            msg = dict()
-            msg['gameInfo'] = infomap_all[1]
-            msg['gameSetting'] = self.game_setting
+    def daily_initialize(self):
+        self.request = "DAILY_INITIALIZE"
+        pass
+    
+    def daily_finish(self):
+        self.request = "DAILY_FINISH"
+        pass
 
+    def game_finish(self):
+        self.request = "FINISH"
+        pass
 
-"""
-def send_msg_allclient(client, server, message):
-    server.send_message_to_all("{}".format(
-        message).encode('iso-8859-1').decode("utf-8"))
-    print(message.encode('iso-8859-1').decode("utf-8"))
-# print(client)
+    def gm_attack(self,agent):
+        self.request = "ATTACK"
+        self.status[str(agent)] = 'DEAD'
+        return True
 
-def send_msg(client,server,self):
-    server.send_message(client, json.dump(self.msg))
-"""
+    def gm_divine(self,agent):
+        self.request = "DIVINE"
+        role = self.RoleMap[str(agent)]
+        if role == 'WEREWOLF':
+            return role
+        else:
+            return "HUMAN"
+
+    def gm_vote(self,agent):
+        self.request = "VOTE"
+        self.status[str(agnet)] = 'DEAD'
+        return True
+
+    def gm_talk(self):
+        self.request = "TALK"
+        pass
+
+    def create_msg(self):
+        # PCには 'request' 'gameInfo' さえ渡せていればよさそう
+        # NPCには以下のデータを渡す。whisperHistoryはNoneのまま
+        self.game_data = {
+            'gameInfo': None,
+            'talkHistory': None,
+            'whisperHistory': None,
+            'request': None,
+            'gameSetting': self.game_setting,
+        }
+
+    def request_gen(self):
+        """
+        what requests:
+        NAME ROLE INITIALIZE DAILY_INITIALIZE DAILY_FINISH
+        FINISH VOTE ATTACK DIVINE GUARD TALK WHISPER
+        
+        # player name は既知のステータスなのでリクエストの必要はない。
+        # role もランダムに割り当てるのでリクエストの必要はない
+        # GUARD,WHISPER は使用しない。
+        """
+        if self.game_run:
+            self.game_run = False
+            return "INITIALIZE"
+
+    def gm_diff(self):
+        """
+        以下のデータがgameinfoparserで生成される。
+        その下準備としてTalkHistoryを作る。
+        pandas dataflame
+            day    type  idx  turn  agent                           text
+        0    2  finish    1     0      1  COMINGOUT Agent[01] POSSESSED
+        1    2  finish    2     0      2   COMINGOUT Agent[02] VILLAGER
+        2    2  finish    3     0      3       COMINGOUT Agent[03] SEER
+        3    2  finish    4     0      4   COMINGOUT Agent[04] WEREWOLF
+        4    2  finish    5     0      5   COMINGOUT Agent[05] VILLAGER
+        """
+        return 0
 
 if __name__ == '__main__':
-    gamer = GameMaster()
-    # gamer.game_initialize()
+    gm = GameMaster()
+    info = gm.game_initialize('Room3')
+    div = gm.gm_divine(3)
+    atk = gm.gm_attack(3)
+    print(gm.status)
+    print(div)

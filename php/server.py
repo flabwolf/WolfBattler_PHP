@@ -40,7 +40,7 @@ def send_msg_allclient(client, server, receive):
     elif mode == "start":
         send_contents["message"] = "ゲームを開始します。"
         send_contents["mode"] = "start"
-        infomap_all = gm.game_initialize(room_name, player_name)
+        infomap_all = gm.game_initialize(room_name)
         for k, c in infomap_all.items():
             server.send_message(clientlist[room_name][k], json.dumps(c))
         pass
