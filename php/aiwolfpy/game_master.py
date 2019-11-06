@@ -17,8 +17,10 @@ class GameMaster(object):
         self.RoleMap = dict()
         self.status = dict()
         self.request = "NAME"
+        self.day = 0
+        self.talkHistory = []
         self.infomap = {
-                'day':0,
+                'day': self.day,
                 'talkList':[],
                 'voteList':[],
                 'whisperList':[],
@@ -131,6 +133,7 @@ class GameMaster(object):
     
     def daily_finish(self):
         self.request = "DAILY_FINISH"
+        self.day += 1
         pass
 
     def game_finish(self):
@@ -139,25 +142,42 @@ class GameMaster(object):
 
     def gm_attack(self,agent):
         self.request = "ATTACK"
-        self.status[agent] = 'DEAD'
+        for npc in self.NpcList:
+            if agent in npc:
+                recv = self.create_msg(npc)
+                self.status[str(recv['agentIdx'])] = 'DEAD'
         return True
 
     def gm_divine(self,agent):
+        # 'divineResult': {'agent': seer_agent, 'day': day_integer, 'result': 'HUMAN' or 'WEREWOLF, 'target': target_agent},
         self.request = "DIVINE"
-
         for npc in self.NpcList:
             if agent in npc:
-                self.create_msg(npc)
+                recv = self.create_msg(npc)
 
-        role = self.RoleMap[agent]
-        if role == 'WEREWOLF':
-            return role
-        else:
-            return "HUMAN"
-
-    def gm_vote(self,agent):
+                role = self.RoleMap[str(recv['agentIdx'])]
+                self.infomap_all[npc[1]]['divineResult'] = {
+                    'agent': npc[2],
+                    'day': self.day,
+                    'result': role if role == 'WEREWOLF' else 'HUMAN',
+                    'target': recv['agentIdx'],
+                }
+            # print(self.infomap_all[npc[1]]['divineResult'])
+        return True
+            
+    def gm_vote(self):
         self.request = "VOTE"
-        self.status[agent] = 'DEAD'
+        votelist = {'1':0,'2':0,'3':0,'4':0,'5':0}
+        votecount = 0
+        for npc in self.NpcList:
+            recv = self.create_msg(npc)
+            votelist[str(recv['agentIdx'])] += 1
+            votecount += 1
+        while(votecount!=5):
+            # PC vote 試験導入
+            votelist['2'] += 1
+            votecount += 1
+        self.status[max(votelist, key=votelist.get)] = 'DEAD'
         return True
 
     def gm_talk(self):
@@ -192,7 +212,7 @@ class GameMaster(object):
                 'talkHistory': None,
                 'whisperHistory': None,
             }
-        self.NpcPerse.connect_parse(npc[0],self.game_data)
+        return self.NpcPerse.connect_parse(npc[0],self.game_data)
 
     def request_gen(self):
         """
@@ -225,6 +245,7 @@ class GameMaster(object):
     def GameStart(self, room_name):
         self.NpcPerse = npc_parse.NPCPerse()
         self.game_initialize(room_name)
+        # print(self.infomap_all)
 
         # 占い師を人狼をピックアップしとく
         seer = [k for k, v in self.RoleMap.items() if v == 'SEER']
@@ -234,8 +255,11 @@ class GameMaster(object):
 
         self.daily_initialize()
         self.daily_finish()
-        self.gm_divine(seer)
-        self.gm_attack(wolf)
+        #self.gm_divine(seer)
+        #self.gm_attack(wolf)
+        #self.gm_talk()
+        self.gm_vote()
+        # print(self.infomap_all)
 
 if __name__ == '__main__':
     gm = GameMaster()

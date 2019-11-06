@@ -50,6 +50,7 @@ class NPCPerse(object):
             # self.parser
             self.parser.initialize(self.game_info, game_setting)
             agent.initialize(self.base_info, self.parser.get_gamedf_diff(), game_setting)
+            return True
         elif request == 'DAILY_INITIALIZE':
             # update
             for k in ["day", "remainTalkMap", "remainWhisperMap", "statusMap"]:
@@ -59,6 +60,7 @@ class NPCPerse(object):
             agent.update(self.base_info, self.parser.get_gamedf_diff(), request)
             # call
             agent.dayStart()
+            return True
         elif request == 'DAILY_FINISH':
             # update
             for k in ["day", "remainTalkMap", "remainWhisperMap", "statusMap"]:
@@ -66,6 +68,7 @@ class NPCPerse(object):
                     self.base_info[k] =  self.game_info[k]
             self.parser.update(self.game_info, talk_history, whisper_history, request)
             agent.update(self.base_info, self.parser.get_gamedf_diff(), request)
+            return True
         elif request == 'FINISH':
             # update
             for k in ["day", "remainTalkMap", "remainWhisperMap", "statusMap"]:
@@ -75,6 +78,7 @@ class NPCPerse(object):
             agent.update(self.base_info, self.parser.get_gamedf_diff(), request)
             # call
             agent.finish()
+            return True
         elif request == 'VOTE':
             # update
             for k in ["day", "remainTalkMap", "remainWhisperMap", "statusMap"]:
