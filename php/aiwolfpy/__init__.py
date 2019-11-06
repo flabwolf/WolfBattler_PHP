@@ -9,5 +9,5 @@ from .read_log import read_log
 from . import game_master
 # from . import websocket_perser
 #from .npc_parse import connect_parse
-from . import agent
+from . import simple
 from . import npc_parse

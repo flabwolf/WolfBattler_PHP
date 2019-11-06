@@ -5,8 +5,8 @@ import copy
 import json
 import sqlite3
 
-from . import agent
 from . import npc_parse
+from . import simple as summon #召喚するエージェント __init__.py も変更する
 
 class GameMaster(object):
     def __init__(self):
@@ -97,7 +97,7 @@ class GameMaster(object):
                 npc_name = 'NPC-'+str(p_id)
                 NPC = (random.randint(0,100),npc_name,p_id,room_id[0][0])
                 players.append(NPC)
-                npc_agent = agent.SampleAgent(npc_name)
+                npc_agent = summon.SampleAgent(npc_name)
                 self.NpcList.append([npc_agent,npc_name,p_id])
             # print(self.NpcList)
 
@@ -144,18 +144,18 @@ class GameMaster(object):
         for npc in self.NpcList:
             self.create_msg(npc)
 
-    def gm_attack(self,agent):
+    def gm_attack(self,wolf):
         self.request = 'ATTACK'
         for npc in self.NpcList:
-            if agent in npc:
+            if wolf in npc:
                 recv = self.create_msg(npc)
                 self.status[str(recv['agentIdx'])] = 'DEAD'
 
-    def gm_divine(self,agent):
+    def gm_divine(self,seer):
         # 'divineResult': {'agent': seer_agent, 'day': day_integer, 'result': 'HUMAN' or 'WEREWOLF, 'target': target_agent},
         self.request = 'DIVINE'
         for npc in self.NpcList:
-            if agent in npc:
+            if seer in npc:
                 recv = self.create_msg(npc)
 
                 role = self.RoleMap[str(recv['agentIdx'])]
@@ -284,7 +284,7 @@ class GameMaster(object):
         self.daily_initialize()
         self.daily_finish()
         #for i in range(10):
-        #    self.gm_talk()
+        #   self.gm_talk()
         #self.gm_divine(seer)
         #self.gm_attack(wolf)
         #self.gm_talk()
