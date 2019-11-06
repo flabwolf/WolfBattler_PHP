@@ -18,6 +18,8 @@ class GameMaster(object):
         self.status = dict()
         self.request = "NAME"
         self.day = 0
+        self.talknum = 0
+        self.turn = 0
         self.talkHistory = []
         self.infomap = {
                 'day': self.day,
@@ -75,7 +77,7 @@ class GameMaster(object):
         # ゲーム開始に呼び出す
         # print(room_name)
 
-        self.request = "INITIALIZE"
+        self.request = 'INITIALIZE'
         dbname = "db/wolf_battler.db"
         with sqlite3.connect(dbname) as conn:
             c = conn.cursor()
@@ -89,6 +91,7 @@ class GameMaster(object):
             self.NpcList = []
             while(len(players)!=5):
                 # PCが5人に満たないときはNPCを召喚する。
+                # NPCはgame_master間でやり取りをする(ソケット通信をしない)
                 # print('NPC append')
                 p_id = len(players)+1
                 npc_name = 'NPC-'+str(p_id)
@@ -126,31 +129,31 @@ class GameMaster(object):
             # return self.infomap_all,self.request
 
     def daily_initialize(self):
-        self.request = "DAILY_INITIALIZE"
+        self.request = 'DAILY_INITIALIZE'
         for npc in self.NpcList:
             self.create_msg(npc)
-        pass
     
     def daily_finish(self):
-        self.request = "DAILY_FINISH"
+        self.request = 'DAILY_FINISH'
+        for npc in self.NpcList:
+            self.create_msg(npc)
         self.day += 1
-        pass
 
     def game_finish(self):
-        self.request = "FINISH"
-        pass
+        self.request = 'FINISH'
+        for npc in self.NpcList:
+            self.create_msg(npc)
 
     def gm_attack(self,agent):
-        self.request = "ATTACK"
+        self.request = 'ATTACK'
         for npc in self.NpcList:
             if agent in npc:
                 recv = self.create_msg(npc)
                 self.status[str(recv['agentIdx'])] = 'DEAD'
-        return True
 
     def gm_divine(self,agent):
         # 'divineResult': {'agent': seer_agent, 'day': day_integer, 'result': 'HUMAN' or 'WEREWOLF, 'target': target_agent},
-        self.request = "DIVINE"
+        self.request = 'DIVINE'
         for npc in self.NpcList:
             if agent in npc:
                 recv = self.create_msg(npc)
@@ -163,10 +166,9 @@ class GameMaster(object):
                     'target': recv['agentIdx'],
                 }
             # print(self.infomap_all[npc[1]]['divineResult'])
-        return True
             
     def gm_vote(self):
-        self.request = "VOTE"
+        self.request = 'VOTE'
         votelist = {'1':0,'2':0,'3':0,'4':0,'5':0}
         votecount = 0
         for npc in self.NpcList:
@@ -178,11 +180,25 @@ class GameMaster(object):
             votelist['2'] += 1
             votecount += 1
         self.status[max(votelist, key=votelist.get)] = 'DEAD'
-        return True
 
     def gm_talk(self):
-        self.request = "TALK"
-        pass
+        # {'agent': 2, 'day': 1, 'idx': 30, 'text': 'Over', 'turn': 6}
+        self.request = 'TALK'
+        talk_this_turn = []
+        for npc in self.NpcList:
+            recv = self.create_msg(npc)
+            talk = {
+                'agent': npc[2],
+                'day': self.day,
+                'idx': self.talknum,
+                'text': recv,
+                'turn': self.turn,
+            }
+            self.talknum += 1 
+            talk_this_turn.append(talk)
+            self.infomap['talkList'].append(talk)
+        self.talkHistory = copy.deepcopy(talk_this_turn)
+        self.turn += 1
 
     def create_msg(self,npc):
         #print(player_name)
@@ -204,6 +220,46 @@ class GameMaster(object):
                 'talkHistory': None,
                 'whisperHistory': None,
             }
+        elif self.request == 'FINISH':
+            self.game_data = {
+                'gameInfo': self.infomap_all[npc[1]],
+                'gameSetting': None,
+                'request': self.request,
+                'talkHistory': None,
+                'whisperHistory': None,
+            }
+        elif self.request == 'DAILY_FINISH':
+            self.game_data = {
+                'gameInfo': None,
+                'gameSetting': None,
+                'request': self.request,
+                'talkHistory': self.talkHistory,
+                'whisperHistory': [],
+            }
+        elif self.request == 'TALK':
+            self.game_data = {
+                'gameInfo': None,
+                'gameSetting': None,
+                'request': self.request,
+                'talkHistory': self.talkHistory,
+                'whisperHistory': [],
+            }
+        elif self.request == 'ATTACK':
+            self.game_data = {
+                'gameInfo': self.infomap_all[npc[1]],
+                'gameSetting': None,
+                'request': self.request,
+                'talkHistory': None,
+                'whisperHistory': None,
+            }
+        elif self.request == 'VOTE':
+            self.game_data = {
+                'gameInfo': None,
+                'gameSetting': None,
+                'request': self.request,
+                'talkHistory': None,
+                'whisperHistory': None,
+            }
         else :
             self.game_data = {
                 'gameInfo': None,
@@ -213,34 +269,6 @@ class GameMaster(object):
                 'whisperHistory': None,
             }
         return self.NpcPerse.connect_parse(npc[0],self.game_data)
-
-    def request_gen(self):
-        """
-        what requests:
-        NAME ROLE INITIALIZE DAILY_INITIALIZE DAILY_FINISH
-        FINISH VOTE ATTACK DIVINE GUARD TALK WHISPER
-        
-        # player name は既知のステータスなのでリクエストの必要はない。
-        # role もランダムに割り当てるのでリクエストの必要はない
-        # GUARD,WHISPER は使用しない。
-        """
-        if self.game_run:
-            self.game_run = False
-            return "INITIALIZE"
-
-    def gm_diff(self):
-        """
-        以下のデータがgameinfoparserで生成される。
-        その下準備としてTalkHistoryを作る。
-        pandas dataflame
-            day    type  idx  turn  agent                           text
-        0    2  finish    1     0      1  COMINGOUT Agent[01] POSSESSED
-        1    2  finish    2     0      2   COMINGOUT Agent[02] VILLAGER
-        2    2  finish    3     0      3       COMINGOUT Agent[03] SEER
-        3    2  finish    4     0      4   COMINGOUT Agent[04] WEREWOLF
-        4    2  finish    5     0      5   COMINGOUT Agent[05] VILLAGER
-        """
-        return 0
 
     def GameStart(self, room_name):
         self.NpcPerse = npc_parse.NPCPerse()
@@ -255,11 +283,15 @@ class GameMaster(object):
 
         self.daily_initialize()
         self.daily_finish()
+        #for i in range(10):
+        #    self.gm_talk()
         #self.gm_divine(seer)
         #self.gm_attack(wolf)
         #self.gm_talk()
-        self.gm_vote()
+        #self.gm_vote()
         # print(self.infomap_all)
+        return True
+
 
 if __name__ == '__main__':
     gm = GameMaster()

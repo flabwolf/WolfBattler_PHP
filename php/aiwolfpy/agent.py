@@ -1,8 +1,6 @@
-#!/usr/bin/env python
-from __future__ import print_function, division 
+from __future__ import print_function, division
 
-# this is main script
-# simple version
+from . import contentbuilder as cb
 
 myname = 'simple'
 
@@ -34,7 +32,8 @@ class SampleAgent(object):
         return None
     
     def talk(self):
-        return cb.over()
+        return cb.skip()
+        # return cb.over()
     
     def whisper(self):
         return cb.over()
