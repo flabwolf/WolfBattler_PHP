@@ -289,6 +289,7 @@ function speak() {
 }
 
 $(function () {
+    // $(".free").hide();
     $(".vote").hide();
     $(".talk").hide();
     $(".divine").hide();
