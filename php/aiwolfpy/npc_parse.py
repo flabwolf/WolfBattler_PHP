@@ -1,8 +1,4 @@
 from __future__ import print_function, division 
-import argparse
-import socket
-from socket import error as SocketError
-import errno
 import json
 from .gameinfoparser import GameInfoParser
 

@@ -276,10 +276,8 @@ class GameMaster(object):
         # print(self.infomap_all)
 
         # 占い師を人狼をピックアップしとく
-        seer = [k for k, v in self.RoleMap.items() if v == 'SEER']
-        wolf = [k for k, v in self.RoleMap.items() if v == 'WEREWOLF']
-        seer = int(seer[0])
-        wolf = int(wolf[0])
+        self.seer = int([k for k, v in self.RoleMap.items() if v == 'SEER'][0])
+        self.wolf = int([k for k, v in self.RoleMap.items() if v == 'WEREWOLF'][0])
 
         self.daily_initialize()
         self.daily_finish()
