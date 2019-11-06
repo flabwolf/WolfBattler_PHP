@@ -52,7 +52,7 @@ function create_web_socket() {
             set_divine_list();
         }
         // 襲撃フェーズ時
-        else if (receiveData["mode"] == "divine") {
+        else if (receiveData["mode"] == "attack") {
             $(".chat_screen").text("");
             $(".talk").hide();
             $(".free").hide();

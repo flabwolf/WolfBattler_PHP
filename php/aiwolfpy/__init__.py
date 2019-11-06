@@ -8,5 +8,6 @@ from .gameinfoparser import GameInfoParser
 from .read_log import read_log
 from . import game_master
 # from . import websocket_perser
-from .npc_perse import connect_parse
+#from .npc_parse import connect_parse
 from . import agent
+from . import npc_parse

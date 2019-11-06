@@ -20,15 +20,15 @@ class SampleAgent(object):
         self.base_info = base_info
         # game_setting
         self.game_setting = game_setting
-        print(type(game_setting))
+        # print(type(game_setting))
         # print(base_info)
         # print(diff_data)
         
     def update(self, base_info, diff_data, request):
         self.base_info = base_info
-        print(type(request))
-        print(type(base_info))
-        print(type(diff_data))
+        # print(type(request))
+        # print(type(base_info))
+        # print(type(diff_data))
         
     def dayStart(self):
         return None

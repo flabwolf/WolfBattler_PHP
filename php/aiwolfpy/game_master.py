@@ -6,7 +6,7 @@ import json
 import sqlite3
 
 from . import agent
-from .npc_perse import connect_parse
+from . import npc_parse
 
 class GameMaster(object):
     def __init__(self):
@@ -31,7 +31,7 @@ class GameMaster(object):
                 'executedAgent':-1,
                 'existingRoleList':['POSSESSED','SEER','VILLAGER','WEREWOLF'],
                 'guardedAgent':-1,
-                'lastDaedAgentList':[],
+                'lastDeadAgentList':[],
                 'latestAttackVoteList':[],
                 'latestExecutedAgent':-1,
                 'latestVoteList':[],
@@ -93,7 +93,7 @@ class GameMaster(object):
                 NPC = (random.randint(0,100),npc_name,p_id,room_id[0][0])
                 players.append(NPC)
                 npc_agent = agent.SampleAgent(npc_name)
-                self.NpcList.append([npc_agent,npc_name])
+                self.NpcList.append([npc_agent,npc_name,p_id])
             # print(self.NpcList)
 
             rolelist = ['VILLAGER', 'VILLAGER',
@@ -107,9 +107,9 @@ class GameMaster(object):
             # print(self.status)
 
             for row in players:
-                self.infomap['agentIdx'] = row[2]
+                self.infomap['agent'] = row[2]
                 self.infomap['myRole'] = self.RoleMap[str(row[2])]
-                self.infomap['roleMap'] = {str(self.infomap['agentIdx']): self.infomap['myRole']}
+                self.infomap['roleMap'] = {str(self.infomap['agent']): self.infomap['myRole']}
                 self.infomap['statusMap'] = self.status
                 self.infomap['remainTalkMap'] = {
                     '1': 10, '2': 10, '3': 10, '4': 10, '5': 10}
@@ -118,7 +118,7 @@ class GameMaster(object):
                 self.infomap_all[row[1]] = copy.copy(self.infomap)
             
             for npc in self.NpcList :
-                self.create_msg(npc[1])
+                self.create_msg(npc)
 
             # print(self.infomap_all)
             # return self.infomap_all,self.request
@@ -126,7 +126,7 @@ class GameMaster(object):
     def daily_initialize(self):
         self.request = "DAILY_INITIALIZE"
         for npc in self.NpcList:
-            self.create_msg(npc[1])
+            self.create_msg(npc)
         pass
     
     def daily_finish(self):
@@ -145,6 +145,10 @@ class GameMaster(object):
     def gm_divine(self,agent):
         self.request = "DIVINE"
 
+        for npc in self.NpcList:
+            if agent in npc:
+                self.create_msg(npc)
+
         role = self.RoleMap[agent]
         if role == 'WEREWOLF':
             return role
@@ -160,25 +164,35 @@ class GameMaster(object):
         self.request = "TALK"
         pass
 
-    def create_msg(self,player_name):
+    def create_msg(self,npc):
+        #print(player_name)
         # PCには 'request' 'gameInfo' さえ渡せていればよさそう
         # NPCには以下のデータを渡す。whisperHistoryはNoneのまま
         if self.request == 'INITIALIZE' :
             self.game_data = {
-                'gameInfo': self.infomap_all[player_name],
+                'gameInfo': self.infomap_all[npc[1]],
                 'gameSetting': self.game_setting,
+                'request': self.request,
+                'talkHistory': None,
+                'whisperHistory': None,
+            }
+        elif self.request == 'DAILY_INITIALIZE':
+            self.game_data = {
+                'gameInfo': self.infomap_all[npc[1]],
+                'gameSetting': None,
                 'request': self.request,
                 'talkHistory': None,
                 'whisperHistory': None,
             }
         else :
             self.game_data = {
-                'gameInfo': self.infomap_all[player_name],
+                'gameInfo': None,
                 'gameSetting': None,
                 'request': self.request,
                 'talkHistory': None,
                 'whisperHistory': None,
             }
+        self.NpcPerse.connect_parse(npc[0],self.game_data)
 
     def request_gen(self):
         """
@@ -209,22 +223,19 @@ class GameMaster(object):
         return 0
 
     def GameStart(self, room_name):
+        self.NpcPerse = npc_parse.NPCPerse()
         self.game_initialize(room_name)
+
+        # 占い師を人狼をピックアップしとく
         seer = [k for k, v in self.RoleMap.items() if v == 'SEER']
         wolf = [k for k, v in self.RoleMap.items() if v == 'WEREWOLF']
+        seer = int(seer[0])
+        wolf = int(wolf[0])
+
         self.daily_initialize()
         self.daily_finish()
-        self.infomap['divineResult'] = self.gm_divine(seer)
+        self.gm_divine(seer)
         self.gm_attack(wolf)
 
 if __name__ == '__main__':
     gm = GameMaster()
-    """
-    gm.game_initialize
-    gm.daily_initialize
-    gm.daily_finish
-    gm.gm_divine
-    gm.daily_initialize
-    gm.gm_talk
-    gm.daily_finish
-    """
