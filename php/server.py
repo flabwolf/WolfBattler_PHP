@@ -43,8 +43,8 @@ def send_msg_allclient(client, server, receive):
     elif mode == "start":
         send_contents["message"] = "ゲームを開始します。"
         send_contents["mode"] = "start"
-        # gm.GameMain(room_name,server,clientlist,send_contents)
-        # infomap_all = gm.infomap_all
+        gm.GameMain(room_name,server,clientlist,send_contents)
+        infomap_all = gm.infomap_all
         """
         for k, c in infomap_all.items():
             try:
@@ -95,8 +95,8 @@ def send_msg_allclient(client, server, receive):
     for k, c in clientlist[room_name].items():
         server.send_message(c, json.dumps(send_contents))
     
-    gm.GameMain(room_name,server,clientlist,send_contents,mode)
-    infomap_all = gm.infomap_all
+    # gm.GameMain(room_name,server,clientlist,send_contents,mode)
+    # infomap_all = gm.infomap_all
 
 
 gm = aiwolfpy.game_master.GameMaster()

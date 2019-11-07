@@ -345,7 +345,7 @@ class GameMaster(object):
             self.server.send_message(c, json.dumps(self.send_contents))
     
 
-    def GameMain(self, room_name, server, clientlist, send_contents, mode):
+    def GameMain(self, room_name, server, clientlist, send_contents):
         self.NpcPerse = npc_parse.NPCPerse()
 
         self.room_name = room_name
@@ -355,48 +355,29 @@ class GameMaster(object):
 
         print(self.RoleMap)
 
-        if mode == "start":
-            # DAY 0 
-            print("GAMESTART")
-            self.game_initialize(room_name)
-            # print(self.infomap_all)
-
-            # 占い師、人狼をピックアップしとく
-            self.seer = int([k for k, v in self.RoleMap.items() if v == 'SEER'][0])
-            self.wolf = int([k for k, v in self.RoleMap.items() if v == 'WEREWOLF'][0])
-
-            self.daily_initialize()
-            self.daily_finish()
-
-            for k, c in self.infomap_all.items():
-                try:
-                    self.server.send_message(clientlist[room_name][k], json.dumps(c))
-                    self.send_contents["message"] = "あなたは {} です".format(c['myRole'])
-                    self.server.send_message(clientlist[room_name][k], json.dumps(self.send_contents))
-                except KeyError:
-                    # NPCはKeyErrorを吐く
-                    pass
-
-                self.gm_divine(0)
-            
-            self.daily_initialize()
-            
-        elif mode == "divine":
-            pass
-        elif mode == "attack":
-            pass
-        elif mode == "vote":
-            pass
-        elif mode == "talk":
-            pass
-
-        #for i in range(10):
-        #   self.gm_talk()
-        #self.gm_divine(seer)
-        #self.gm_attack(wolf)
-        #self.gm_talk()
-        #self.gm_vote()
+        # DAY 0 
+        print("GAMESTART")
+        self.game_initialize(room_name)
         # print(self.infomap_all)
+
+        # 占い師、人狼をピックアップしとく
+        self.seer = int([k for k, v in self.RoleMap.items() if v == 'SEER'][0])
+        self.wolf = int([k for k, v in self.RoleMap.items() if v == 'WEREWOLF'][0])
+
+        self.daily_initialize()
+        self.daily_finish()
+
+        for k, c in self.infomap_all.items():
+            try:
+                self.server.send_message(clientlist[room_name][k], json.dumps(c))
+                self.send_contents["message"] = "あなたは {} です".format(c['myRole'])
+                self.server.send_message(clientlist[room_name][k], json.dumps(self.send_contents))
+            except KeyError:
+                # NPCはKeyErrorを吐く
+                pass
+
+        self.gm_divine(0)
+        
         return True
 
 
