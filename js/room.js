@@ -30,8 +30,8 @@ function create_web_socket() {
             get_player_info();
         }
         // 投票フェイズ時
-        else if (receiveData["mode"] == "vote") {
-            $(".chat_screen").text("");
+        else if (receiveData["mode"] == "VOTE") {
+            // $(".chat_screen").text("");
             $(".talk").hide();
             $(".free").hide();
             $(".divine").hide();
@@ -41,8 +41,8 @@ function create_web_socket() {
             set_vote_list();
         }
         // 占いフェイズ時
-        else if (receiveData["mode"] == "divine") {
-            $(".chat_screen").text("");
+        else if (receiveData["mode"] == "DIVINE") {
+            // $(".chat_screen").text("");
             $(".talk").hide();
             $(".free").hide();
             $(".divine").show();
@@ -52,12 +52,34 @@ function create_web_socket() {
             set_divine_list();
         }
         // 襲撃フェーズ時
-        else if (receiveData["mode"] == "attack") {
-            $(".chat_screen").text("");
+        else if (receiveData["mode"] == "ATTACK") {
+            // $(".chat_screen").text("");
             $(".talk").hide();
             $(".free").hide();
             $(".divine").hide();
             $(".attack").show();
+            $(".vote").hide();
+            get_player_info();
+            set_divine_list();
+        }
+        // 夜フェーズ時
+        else if (receiveData["mode"] == "NIGHT") {
+            // $(".chat_screen").text("");
+            $(".talk").hide();
+            $(".free").hide();
+            $(".divine").hide();
+            $(".attack").hide();
+            $(".vote").hide();
+            get_player_info();
+            set_divine_list();
+        }
+        // 昼フェーズ時
+        else if (receiveData["mode"] == "TALK") {
+            // $(".chat_screen").text("");
+            $(".talk").show();
+            $(".free").hide();
+            $(".divine").hide();
+            $(".attack").hide();
             $(".vote").hide();
             get_player_info();
             set_divine_list();
