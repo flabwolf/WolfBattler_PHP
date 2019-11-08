@@ -1,7 +1,7 @@
 var flag = true;
 var player_name;
 var room_name;
-var player_info;
+var player_info = { "1": [null, null], "2": [null, null], "3": [null, null], "4": [null, null], "5": [null, null] } // 番号：[名前、生死]
 var first, second, third;
 var send_contents;
 
@@ -17,8 +17,19 @@ function create_web_socket() {
     };
     ws.onmessage = function (e) {
         var receiveData = JSON.parse(e.data)
-        // if (receiveData["room_name"] == room_name) {
         console.log(receiveData)
+        // ルーム内のプレイヤー名の取得
+        if (receiveData["mode"] == "player_list") {
+            Object.keys(receiveData["statusMap"]).forEach(function (key) {
+                player_info[key][0] = receiveData["statusMap"][key];
+            });
+        }
+        // プレイヤーの生死情報の取得
+        if (receiveData["mode"] == "RESULT") {
+            Object.keys(receiveData["statusMap"]).forEach(function (key) {
+                player_info[key][1] = receiveData["statusMap"][key];
+            });
+        }
         // ゲーム開始時
         if (receiveData["mode"] == "start") {
             $(".chat_screen").text("");
@@ -29,39 +40,13 @@ function create_web_socket() {
             $(".talk").show();
             get_player_info();
         }
-        // 投票フェイズ時
-        else if (receiveData["mode"] == "VOTE") {
-            // $(".chat_screen").text("");
-            $(".talk").hide();
-            $(".free").hide();
-            $(".divine").hide();
-            $(".attack").hide();
-            $(".vote").show();
-            get_player_info();
-            set_vote_list();
+
+        // 投票、襲撃、占いフェーズ時
+        if ((receiveData["mode"] == "VOTE") | (receiveData["mode"] == "ATTACK") | (receiveData["mode"] == "DIVINE")) {
+            $(".other").show();
+            set_other_list();
         }
-        // 占いフェイズ時
-        else if (receiveData["mode"] == "DIVINE") {
-            // $(".chat_screen").text("");
-            $(".talk").hide();
-            $(".free").hide();
-            $(".divine").show();
-            $(".attack").hide();
-            $(".vote").hide();
-            get_player_info();
-            set_divine_list();
-        }
-        // 襲撃フェーズ時
-        else if (receiveData["mode"] == "ATTACK") {
-            // $(".chat_screen").text("");
-            $(".talk").hide();
-            $(".free").hide();
-            $(".divine").hide();
-            $(".attack").show();
-            $(".vote").hide();
-            get_player_info();
-            set_divine_list();
-        }
+
         // 夜フェーズ時
         else if (receiveData["mode"] == "NIGHT") {
             // $(".chat_screen").text("");
@@ -104,10 +89,8 @@ function create_web_socket() {
         ws.close();
     });
     game_start();
-    speak();
-    vote();
-    divine();
-    attack();
+    speak_talk();
+    speak_other();
 }
 
 
@@ -192,8 +175,8 @@ function set_select_val() {
             $("#second_choice").show();
             $("#second_choice").html("");
             $("#third_choice").html("");
-            player_info.forEach(function (data) {
-                $("#second_choice").append("<option class='target_name'>" + data + "</option>");
+            Object.keys(player_info).forEach(function (key) {
+                $("#second_choice").append("<option class='target_name'>" + player_info[key][0] + "</option>");
             });
             $("#third_choice").append("<option>村人</option>");
             $("#third_choice").append("<option>占い師</option>");
@@ -212,81 +195,44 @@ function set_select_val() {
     });
 }
 
-// 投票先の名前をセットする
-function set_vote_list() {
-    $("#vote_list").val();
-    player_info.forEach(function (data) {
-        $("#vote_list").append("<option class='target_name'>" + data + "</option>");
+// 投票、襲撃、占い用の選択リストのセット
+function set_other_list() {
+    Object.keys(player_info).forEach(function (key) {
+        $("#other_list").append("<option class='target_name'>" + player_info[key][0] + "</option>");
     });
 }
 
-// 投票する
-function vote() {
-    $("#vote_btn").on("click", function () {
-        send_contents["mode"] = "vote";
-        var target = $("#vote_list").val();
-        send_contents["message"] = target;
-        ws.send(JSON.stringify(send_contents));
-    });
-}
-
-// 占い先をセットする
-function set_divine_list() {
-    $("#divine_list").val();
-    player_info.forEach(function (data) {
-        $("#divine_list").append("<option class='target_name'>" + data + "</option>");
-    });
-}
-
-// 投票する
-function divine() {
-    $("#divine_btn").on("click", function () {
-        send_contents["mode"] = "divine";
-        var target = $("#divine_list").val();
-        send_contents["message"] = target;
-        ws.send(JSON.stringify(send_contents));
-    });
-}
-
-// 襲撃先をセットする
-function set_attack_list() {
-    $("#attack_list").val();
-    player_info.forEach(function (data) {
-        $("#attack_list").append("<option class='target_name'>" + data + "</option>");
-    });
-}
-
-// 投票する
-function attack() {
-    $("#attack_btn").on("click", function () {
-        send_contents["mode"] = "attack";
-        var target = $("#attack_list").val();
+// 投票、襲撃、占いの対象を送信
+function speak_other() {
+    $("#other_btn").on("click", function () {
+        send_contents["mode"] = "other";
+        var target = $("#other_list").val();
         send_contents["message"] = target;
         ws.send(JSON.stringify(send_contents));
     });
 }
 
 // ルーム内のプレイヤー情報取得
-function get_player_info() {
-    $.ajax({
-        url: "../php/ajax.php",
-        dataType: "json",
-        type: "post",
-        async: false,
-        data: {
-            "func": "get_player_info",
-            "room_name": room_name
-        }
-    })
-        .done(function (data) {
-            console.log(data);
-            player_info = data;
-            $("#second_choice").hide();
-        });
-}
+// function get_player_info() {
+//     $.ajax({
+//         url: "../php/ajax.php",
+//         dataType: "json",
+//         type: "post",
+//         async: false,
+//         data: {
+//             "func": "get_player_info",
+//             "room_name": room_name
+//         }
+//     })
+//         .done(function (data) {
+//             console.log(data);
+//             player_info = data;
+//             $("#second_choice").hide();
+//         });
+// }
 
 // 発言する（ゲーム中）
-function speak() {
+function speak_talk() {
     $("#game_chat_btn").on("click", function () {
         first = $("#first_choice").val();
         send_contents["mode"] = "talk";
@@ -312,10 +258,8 @@ function speak() {
 
 $(function () {
     // $(".free").hide();
-    $(".vote").hide();
+    $(".other").hide();
     $(".talk").hide();
-    $(".divine").hide();
-    $(".attack").hide();
     var urlParams = new URLSearchParams(window.location.search);
     player_name = urlParams.get("player_name");
     room_name = urlParams.get("room_name");
