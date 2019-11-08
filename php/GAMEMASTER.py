@@ -1,4 +1,4 @@
-# from websocket_server import WebsocketServer
+from websocket_server import WebsocketServer
 from contextlib import closing
 import random
 import copy
@@ -6,9 +6,13 @@ import json
 import sqlite3
 import time
 
-from . import npc_parse
-from . import simple as summon #召喚するエージェント __init__.py も変更する
-from . import contentbuilder as cb
+#from . import npc_parse
+#from . import simple as summon #召喚するエージェント __init__.py も変更する
+#from . import contentbuilder as cb
+import aiwolfpy
+import aiwolfpy.npc_parse as npc_parse
+import aiwolfpy.simple as summon
+import aiwolfpy.contentbuilder as cb
 
 class GameMaster(object):
     def __init__(self):
@@ -77,7 +81,7 @@ class GameMaster(object):
             'whisperBeforeRevote': False
         }
 
-    def game_initialize(self, room_name):
+    def game_initialize(self):
         # ゲーム開始に呼び出す
         # print(room_name)
 
@@ -89,7 +93,7 @@ class GameMaster(object):
             c = conn.cursor()
             #select_sql = 'select * from players'
             room_id = list(
-                c.execute("select * from rooms where name = '%s'" % room_name))
+                c.execute("select * from rooms where name = '%s'" % self.room_name))
             select_sql = "select * from players where room_id = '%d'" % room_id[0][0]
             players = list(c.execute(select_sql))
             self.playerlist = copy.deepcopy(players)
@@ -278,10 +282,8 @@ class GameMaster(object):
         
         # self.turn += 1
 
-    def player_talk(self,player_name,target_name,role_jp):
+    def player_talk(self):
         self.talk_this_turn = []
-        print(player_name)
-
 
     def create_msg(self,npc):
         #print(player_name)
@@ -369,20 +371,15 @@ class GameMaster(object):
                 pass
 
 
-    def GameMain(self, room_name, server, clientlist, send_contents):
+    def GameMain(self):
         self.NpcPerse = npc_parse.NPCPerse()
         
         self.day = 0
-        self.room_name = room_name
-        self.server = server
-        self.clientlist = clientlist
-        self.send_contents = copy.deepcopy(send_contents)
-
 
         if self.day == 0:
             # DAY 0 
             print("GAMESTART")
-            self.game_initialize(room_name)
+            self.game_initialize()
             # print(self.infomap_all)
             print(self.RoleMap)
 
@@ -414,6 +411,108 @@ class GameMaster(object):
         """
         return True
 
+    def send_msg_allclient(self, client, server, receive):
+        receive = json.loads(receive.encode('iso-8859-1').decode("utf-8"))
+        print(receive)
+        self.player_name = receive["player_name"]
+        self.room_name = receive["room_name"]
+        self.message = receive["message"]
+        self.mode = receive["mode"]
+        self.send_contents = {"player_name": self.player_name,
+                        "room_name": self.room_name, "message": "", "mode": ""}
 
-if __name__ == '__main__':
+        if mode == "init":
+            self.send_contents["message"] = self.player_name + "が入室しました。"
+            if self.room_name in list(self.clientlist):
+                # self.clientlist[self.room_name]["clients"].append(client)
+                self.clientlist[self.room_name][self.player_name] = client
+            else:
+                self.clientlist[self.room_name] = {}
+                self.master[self.room_name] = GameMaster()
+                #self.clientlist[self.room_name]["clients"] = []
+                # self.clientlist[self.room_name]["clients"].append(client)
+                self.clientlist[self.room_name][self.player_name] = client
+        
+        elif mode == "exit":
+            self.send_contents["message"] = self.player_name + "が退室しました。"
+        
+        elif mode == "normal":
+            self.send_contents["message"] = self.player_name + " ： " + message
+        
+        elif mode == "start":
+            self.send_contents["message"] = "ゲームを開始します。"
+            self.send_contents["mode"] = "start"
+            for k, c in self.clientlist[self.room_name].items():
+                server.send_message(c, json.dumps(self.send_contents))
+            gm.GameMain()
+            infomap_all = gm.infomap_all
+            return 0
+            """
+            for k, c in infomap_all.items():
+                try:
+                    server.send_message(self.clientlist[self.room_name][k], json.dumps(c))
+                except KeyError:
+                    # NPCはKeyErrorを吐く
+                    pass
+            """
+        
+        elif mode == "talk":
+            if message[0] == "カミングアウト":
+                self.send_contents["message"] = "{} ： 私は【{}】です。".format(
+                    self.self_player_name, message[1])
+                gm.player_talk(self.self_player_name,message[1],None)
+            elif message[0] == "推定発言":
+                self.send_contents["message"] = "{} ： 私は【{}】が【{}】だと思います。".format(
+                    self.self_player_name, message[1], message[2])
+                gm.player_talk(self.self_player_name,message[1],message[2])      
+            elif message[0] == "投票発言":
+                self.send_contents["message"] = "{} ： 私は【{}】に投票します。".format(
+                    self.self_player_name, message[1])
+                gm.player_talk(self.self_player_name,message[1],None)
+
+        elif mode == "vote":
+            self.send_contents["message"] = "{} ： 【{}】に投票".format(
+                self.self_player_name, message)
+            gm.vote_request(message)
+            server.send_message(client,json.dumps(self.send_contents))
+            self.send_contents["message"] = "{}:投票".format(self.self_player_name)
+
+        elif mode == "divine":
+            result = gm.gm_divine(message)
+            self.send_contents["message"] = "{} ： 【{}】は【{}】です".format(
+                self.self_player_name, message, result)
+            server.send_message(client,json.dumps(self.send_contents))
+            
+            self.send_contents["message"] = "\n DAY{} : TALKPART START".format(gm.day)
+            self.send_contents["self.self_player_name"] = "GAME_MASTER"
+            self.send_contents["mode"] = "TALK"
+        
+        elif mode == "attack":
+            self.send_contents["message"] = "{} ： 【{}】を襲撃します。".format(
+                self.self_player_name, message)
+            server.send_message(client,json.dumps(self.send_contents))
+
+            self.send_contents["message"] = "【{}】が襲撃されました。".format(message)
+        
+        elif mode == "other":
+            pass
+
+        #self.send_contents["game_setting"] = gamesetting
+        # server.send_message_to_all(json.dumps(self.send_contents))
+        #def send_msg(self.clientlist,room_namesend_contents):
+        for k, c in self.clientlist[self.room_name].items():
+            server.send_message(c, json.dumps(self.send_contents))
+        
+        # gm.GameMain(self.room_name,server,self.clientlist,self.send_contents,mode)
+        # infomap_all = gm.infomap_all
+
+if __name__ == "__main__":
+    PORT = 3000
+    HOST = "localhost"
+
     gm = GameMaster()
+    gm.clientlist = {}
+    gm.server = WebsocketServer(PORT, host=HOST)
+    # server.set_fn_new_client(new_client)
+    gm.server.set_fn_message_received(gm.send_msg_allclient)
+    gm.server.run_forever()

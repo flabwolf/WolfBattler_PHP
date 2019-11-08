@@ -19,9 +19,12 @@ function create_web_socket() {
         var receiveData = JSON.parse(e.data)
         console.log(receiveData)
         // ルーム内のプレイヤー名の取得
-        if (receiveData["mode"] == "player_list") {
+        if (receiveData["mode"] == "INITIALIZE") {
+            Object.keys(receiveData["nameMap"]).forEach(function (key) {
+                player_info[key][0] = receiveData["nameMap"][key];
+            });
             Object.keys(receiveData["statusMap"]).forEach(function (key) {
-                player_info[key][0] = receiveData["statusMap"][key];
+                player_info[key][1] = receiveData["statusMap"][key];
             });
         }
         // プレイヤーの生死情報の取得
@@ -43,6 +46,7 @@ function create_web_socket() {
 
         // 投票、襲撃、占いフェーズ時
         if ((receiveData["mode"] == "VOTE") | (receiveData["mode"] == "ATTACK") | (receiveData["mode"] == "DIVINE")) {
+            $(".talk").hide()
             $(".other").show();
             set_other_list();
         }
@@ -63,9 +67,10 @@ function create_web_socket() {
             // $(".chat_screen").text("");
             $(".talk").show();
             $(".free").hide();
-            $(".divine").hide();
-            $(".attack").hide();
-            $(".vote").hide();
+            $(".other").hide();
+            // $(".divine").hide();
+            // $(".attack").hide();
+            // $(".vote").hide();
             get_player_info();
             set_divine_list();
         }

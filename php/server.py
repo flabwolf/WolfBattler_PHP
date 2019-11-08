@@ -30,6 +30,7 @@ def send_msg_allclient(client, server, receive):
             clientlist[room_name][player_name] = client
         else:
             clientlist[room_name] = {}
+            gm[room_name] = aiwolfpy.game_master.GameMaster()
             #clientlist[room_name]["clients"] = []
             # clientlist[room_name]["clients"].append(client)
             clientlist[room_name][player_name] = client
@@ -43,8 +44,11 @@ def send_msg_allclient(client, server, receive):
     elif mode == "start":
         send_contents["message"] = "ゲームを開始します。"
         send_contents["mode"] = "start"
-        gm.GameMain(room_name,server,clientlist,send_contents)
-        infomap_all = gm.infomap_all
+        for k, c in clientlist[room_name].items():
+            server.send_message(c, json.dumps(send_contents))
+        gm[room_name].GameMain(room_name,server,clientlist,send_contents)
+        infomap_all = gm[room_name].infomap_all
+        return 0
         """
         for k, c in infomap_all.items():
             try:
@@ -58,22 +62,25 @@ def send_msg_allclient(client, server, receive):
         if message[0] == "カミングアウト":
             send_contents["message"] = "{} ： 私は【{}】です。".format(
                 player_name, message[1])
+            gm[room_name].player_talk(player_name,message[1],None)
         elif message[0] == "推定発言":
             send_contents["message"] = "{} ： 私は【{}】が【{}】だと思います。".format(
                 player_name, message[1], message[2])
+            gm[room_name].player_talk(player_name,message[1],message[2])      
         elif message[0] == "投票発言":
             send_contents["message"] = "{} ： 私は【{}】に投票します。".format(
                 player_name, message[1])
-    
+            gm[room_name].player_talk(player_name,message[1],None)
+
     elif mode == "vote":
         send_contents["message"] = "{} ： 【{}】に投票".format(
             player_name, message)
-        gm.vote_request(message)
+        gm[room_name].vote_request(message)
         server.send_message(client,json.dumps(send_contents))
         send_contents["message"] = "{}:投票".format(player_name)
 
     elif mode == "divine":
-        result = gm.gm_divine(message)
+        result = gm[room_name].gm_divine(message)
         send_contents["message"] = "{} ： 【{}】は【{}】です".format(
             player_name, message, result)
         server.send_message(client,json.dumps(send_contents))
@@ -88,10 +95,14 @@ def send_msg_allclient(client, server, receive):
         server.send_message(client,json.dumps(send_contents))
 
         send_contents["message"] = "【{}】が襲撃されました。".format(message)
+    
+    elif mode == "other":
+        
+        pass
 
     #send_contents["game_setting"] = gamesetting
-
     # server.send_message_to_all(json.dumps(send_contents))
+    #def send_msg(clientlist,room_namesend_contents):
     for k, c in clientlist[room_name].items():
         server.send_message(c, json.dumps(send_contents))
     
@@ -99,7 +110,8 @@ def send_msg_allclient(client, server, receive):
     # infomap_all = gm.infomap_all
 
 
-gm = aiwolfpy.game_master.GameMaster()
+#gm = aiwolfpy.game_master.GameMaster()
+gm = dict()
 server = WebsocketServer(PORT, host=HOST)
 # server.set_fn_new_client(new_client)
 server.set_fn_message_received(send_msg_allclient)
