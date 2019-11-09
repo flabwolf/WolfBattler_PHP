@@ -2,6 +2,7 @@ from websocket_server import WebsocketServer
 import types
 import json
 import aiwolfpy
+from threading import Thread
 
 # PORT = 3001
 PORT = 3000
@@ -46,7 +47,9 @@ def send_msg_allclient(client, server, receive):
         send_contents["mode"] = "start"
         for k, c in clientlist[room_name].items():
             server.send_message(c, json.dumps(send_contents))
-        gm[room_name].GameMain(room_name,server,clientlist,send_contents)
+        # gm[room_name].GameMain(room_name,server,clientlist,send_contents)
+        thread = Thread(target=gm[room_name].GameMain, args = (room_name,server,clientlist,send_contents), daemon=True)
+        thread.start()
         infomap_all = gm[room_name].infomap_all
         return 0
         """
@@ -113,8 +116,7 @@ def send_msg_allclient(client, server, receive):
         send_contents["message"] = "【{}】が襲撃されました。".format(message)
     
     elif mode == "other":
-        
-        pass
+        gm[room_name].action(player_name,message)        
 
     #send_contents["game_setting"] = gamesetting
     # server.send_message_to_all(json.dumps(send_contents))

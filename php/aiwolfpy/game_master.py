@@ -145,6 +145,10 @@ class GameMaster(object):
         print("DAILY_INITIALIZE")
         for npc in self.NpcList:
             self.create_msg(npc)
+        if self.day != 0:
+            self.send_contents["message"] = "DAY{}: TALKPART START".format(self.day)
+            self.send_contents["mode"] = "TALK"
+            self.send_msg()
     
     def daily_finish(self):
         self.request = 'DAILY_FINISH'
@@ -152,9 +156,6 @@ class GameMaster(object):
         if self.day != 0:
             self.send_contents["message"] = "DAY{}:TALKPART FINISHED.".format(self.day)
             self.send_msg()
-        #self.send_contents["mode"] = "VOTE"
-        #self.send_contents["message"] = "アヤシイと思うヒトを選択してね"
-        #self.send_msg()
         for npc in self.NpcList:
             self.create_msg(npc)
 
@@ -168,6 +169,7 @@ class GameMaster(object):
         self.request = 'ATTACK'
         print("ATTACK")
         # プレーヤーが人狼
+        
         for row in self.playerlist:
             if self.wolf == row[2]:
                 if message == 0:
@@ -176,6 +178,8 @@ class GameMaster(object):
                     self.server.send_message(self.clientlist[self.room_name][row[1]],json.dumps(self.send_contents))
                 else:
                     self.status[self.infomap_all[message]['agent']] = 'DEAD'
+                    self.send_contents["message"] = "{}が襲撃されました。".format(message)
+                    self.send_msg()
             else:
                 pass
 
@@ -185,10 +189,18 @@ class GameMaster(object):
                 recv = self.create_msg(npc)
                 idx = str(recv['agentIdx'])
                 self.status[idx] = 'DEAD'
-                print(self.status)
-                print(self.namemap)
+                # print(self.status)
+                # print(self.namemap)
                 self.send_contents["message"] = "{}が襲撃されました。".format(self.namemap[idx])
                 self.send_msg()
+
+    def attack_request(self):
+        self.request = "ATTACK"
+        for row in self.playerlist:
+            #if self.wolf == row[2]:
+            self.send_contents["message"] = "襲撃先を決定してください"
+            self.send_contents["mode"] = self.request
+            self.server.send_message(self.clientlist[self.room_name][row[1]],json.dumps(self.send_contents))
 
     def gm_divine(self,message):
         # 'divineResult': {'agent': seer_agent, 'day': day_integer, 'result': 'HUMAN' or 'WEREWOLF, 'target': target_agent},
@@ -209,7 +221,10 @@ class GameMaster(object):
             else:
                 if self.seer == row[2]:
                     role = self.infomap_all[message]['myRole']
-                    return role if role == 'WEREWOLF' else 'HUMAN'
+                    role = role if role == 'WEREWOLF' else 'HUMAN'
+                    self.send_contents["message"] = "{}は{}です。".format(message,role)
+                    self.server.send_message(self.clientlist[self.room_name][row[1]],json.dumps(self.send_contents))
+                    #return role if role == 'WEREWOLF' else 'HUMAN'
 
         # NPCが占い師
         for npc in self.NpcList:
@@ -223,13 +238,40 @@ class GameMaster(object):
                     'result': role if role == 'WEREWOLF' else 'HUMAN',
                     'target': recv['agentIdx'],
                 }
-                self.send_contents["message"] = "\n DAY{}: TALKPART START".format(self.day)
-                self.send_contents["mode"] = "TALK"
-                time.sleep(3)
-                self.send_msg()
                 break
             # print(self.infomap_all[npc[1]]['divineResult'])
-            
+    
+    def divine_request(self):
+        self.request = "DIVINE"
+        for row in self.playerlist:
+            self.send_contents["message"] = "占い先を決定してください"
+            self.send_contents["mode"] = self.request
+            self.server.send_message(self.clientlist[self.room_name][row[1]],json.dumps(self.send_contents))
+
+    def action(self,player,message):
+        self.actionlist.append(player)
+        idx = [k for k, v in self.namemap.items() if v == player][0]
+
+        if self.RoleMap[idx] == 'SEER' and self.request == "DIVINE":
+            self.act_target = message
+            #self.gm_divine(message)
+        elif self.RoleMap[idx] == 'WEREWOLF' and self.request == "ATTACK":
+            self.act_target = message
+            #self.gm_attack(message)
+        elif self.request == "VOTE":
+            self.vote_request(message)
+        else :
+            pass
+
+        if len(self.actionlist) == len(self.playerlist):
+            self.actionflag = False
+            if self.request == "DIVINE":
+                self.gm_divine(self.act_target)
+            elif self.request == "ATTACK":
+                self.gm_attack(self.act_target)
+            else:
+                pass
+
     def gm_vote(self):
         self.request = 'VOTE'
         print("VOTE")
@@ -248,6 +290,7 @@ class GameMaster(object):
     
     def vote_request(self,message):
         if self.votecount == 4:
+            self.actionflag = False
             self.votelist[str(self.infomap_all[message]['agent'])] += 1
             idx = max(self.votelist, key=self.votelist.get)
             self.status[idx] = 'DEAD'
@@ -286,27 +329,30 @@ class GameMaster(object):
                     break
             
             target = self.namemap[str(i)]
-            player = self.namemap[str(npc[2])]
 
             self.send_contents["mode"] = self.request
             if recv_s[0] == 'COMINGOUT':
+                player = self.namemap[str(npc[2])]
                 role = self.role_translate(recv_s[2])
                 self.send_contents["message"] = "{}: 私は {} です。".format(player,role)
             elif recv_s[0] == 'ESTIMATE':
+                player = self.namemap[str(npc[2])]
                 role = self.role_translate(recv_s[2])
                 self.send_contents["message"] = "{}: 私は{}が{}だとおもいます。".format(player,target,role)
             elif recv_s[0] == 'VOTE':
+                player = self.namemap[str(npc[2])]
                 self.send_contents["message"] = "{}:私は{}に投票します。".format(player,target)
-            
+            else:
+                self.send_contents["message"] = "{}:SKIP".format(player)            
             self.send_msg()
             
         self.talkHistory = copy.deepcopy(self.talk_this_turn)
         
         # self.turn += 1
 
-    def player_talk(self,player_name,talktype,target,role):
+    def player_talk(self,player,talktype,target,role):
         self.talk_this_turn = []
-        idx = self.infomap_all[player_name]['agent']
+        idx = self.infomap_all[player]['agent']
         if talktype == "COMINGOUT":
             recv = cb.comingout(idx,role)
         elif talktype == "ESTIMATE":
@@ -325,7 +371,8 @@ class GameMaster(object):
         self.talknum += 1
         self.talk_this_turn.append(talk)
         self.infomap['talkList'].append(talk)
-        print(talk)
+        self.player_talked += 1
+        #print(talk)
 
 
     def role_translate(self,role):
@@ -339,9 +386,9 @@ class GameMaster(object):
             return '人狼'
 
     def judge(self):
-        #self.status['3'] = 'DEAD'
-        #self.status['4'] = 'DEAD'
-        #self.status['1'] = 'DEAD'
+        print(self.status)
+        print(self.RoleMap)
+        print(self.namemap)
         dead_agent = [k for k, v in self.status.items() if v == 'DEAD']
         alive_human = 4
         for idx in dead_agent:
@@ -353,7 +400,7 @@ class GameMaster(object):
                 self.send_msg()
                 for npc in self.NpcList:
                     self.create_msg(npc)
-                return True
+                return False
             else:
                 alive_human -=1
         if alive_human <= 1:
@@ -364,7 +411,9 @@ class GameMaster(object):
             self.send_msg()
             for npc in self.NpcList:
                 self.create_msg(npc)
-            return True   
+            return False
+        
+        return True   
 
     def create_msg(self,npc):
         #print(player_name)
@@ -457,52 +506,87 @@ class GameMaster(object):
     def GameMain(self, room_name, server, clientlist, send_contents):
         # self.NpcPerse = npc_parse.NPCPerse()
         
+        game_run = True
         self.day = 0
         self.room_name = room_name
         self.server = server
         self.clientlist = clientlist
         self.send_contents = copy.deepcopy(send_contents)
 
+        while(game_run):
+            if self.day == 0:
+                # DAY 0 
+                print("GAMESTART")
+                self.game_initialize(room_name)
+                # print(self.infomap_all)
+                print(self.RoleMap)
 
-        if self.day == 0:
-            # DAY 0 
-            print("GAMESTART")
-            self.game_initialize(room_name)
-            # print(self.infomap_all)
-            print(self.RoleMap)
+                # 占い師、人狼をピックアップしとく
+                self.seer = int([k for k, v in self.RoleMap.items() if v == 'SEER'][0])
+                self.wolf = int([k for k, v in self.RoleMap.items() if v == 'WEREWOLF'][0])
 
-            # 占い師、人狼をピックアップしとく
-            self.seer = int([k for k, v in self.RoleMap.items() if v == 'SEER'][0])
-            self.wolf = int([k for k, v in self.RoleMap.items() if v == 'WEREWOLF'][0])
+                self.send_info()
 
-            self.send_info()
+                self.daily_initialize()
+                self.daily_finish()
+                
+                time.sleep(1)
+                self.actionflag = True
+                self.actionlist = []
+                self.act_target = None
+                self.divine_request()
+                while(self.actionflag):
+                    pass
+                self.day += 1
 
-            self.daily_initialize()
-            self.daily_finish()
-            
-            #self.gm_attack(0)
-            #self.gm_divine(0)
-            self.day += 1
+            else:
+                # DAY 1 ~
+                time.sleep(1)
+                self.daily_initialize()
+                self.turn = 0
+                self.player_talked = 0
+                while(self.turn!=10):
+                    if self.player_talked == len(self.playerlist):
+                        self.gm_talk()
+                        self.turn += 1
+                        self.player_talked = 0
+                self.daily_finish()
+                
+                time.sleep(1)
+                self.actionflag = True
+                self.actionlist = []
+                self.act_target = None
+                self.gm_vote()
+                while(self.actionflag):
+                    pass
+                
+                time.sleep(1)
+                game_run = self.judge()
+                if game_run == False:
+                    break
 
-        #self.judge()
-        
-        #self.gm_talk()
-        #self.gm_talk()
-        """
-        else:
-            # DAY 1 ~
-            self.daily_initialize()
-            self.turn = 0
-            while(self.turn!=10):
-                self.gm_talk()
-                self.turn += 1
-            self.daily_finish()
-            self.gm_attack(0)
-            self.gm_vote()
-            self.day += 1
-        """
-        return True
+                time.sleep(1)
+                self.actionflag = True
+                self.actionlist = []
+                self.act_target = None
+                self.attack_request()
+                while(self.actionflag):
+                    pass
+                
+                time.sleep(1)
+                game_run = self.judge()
+                if game_run == False:
+                    break
 
+                time.sleep(1)
+                self.actionflag = True
+                self.actionlist = []
+                self.act_target = None
+                self.divine_request()
+                while(self.actionflag):
+                    pass
+                
+                self.day += 1
 
 if __name__ == '__main__':
     gm = GameMaster()
