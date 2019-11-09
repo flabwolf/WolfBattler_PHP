@@ -106,7 +106,8 @@ class GameMaster(object):
                 # c.execute("insert into players values (?,?,?,?)",NPC)
                 players.append(NPC)
                 npc_agent = summon.SampleAgent(npc_name)
-                self.NpcList.append([npc_agent,npc_name,p_id])
+                parse = npc_parse.NPCParse(npc_agent)
+                self.NpcList.append([npc_agent,npc_name,p_id,parse])
             # print(self.NpcList)
 
             rolelist = ['VILLAGER', 'VILLAGER',
@@ -261,9 +262,11 @@ class GameMaster(object):
         self.request = 'TALK'
         self.send_contents['mode'] = self.request
         # AIに送る用
-        # self.talk_this_turn = []
+        self.talk_this_turn = []
         for npc in self.NpcList:
             recv = self.create_msg(npc)
+            # print(npc)
+            # print(recv)
             talk = {
                 'agent': npc[2],
                 'day': self.day,
@@ -274,21 +277,73 @@ class GameMaster(object):
             self.talknum += 1 
             self.talk_this_turn.append(talk)
             self.infomap['talkList'].append(talk)
+
+            recv_s = recv.split()
+            # print(recv_s)
+            for i in range(1,6):
+                if str(i) in recv_s[1]:
+                    idx = i
+                    break
+            
+            target = self.namemap[str(i)]
+            player = self.namemap[str(npc[2])]
+
+            self.send_contents["mode"] = self.request
+            if recv_s[0] == 'COMINGOUT':
+                role = self.role_translate(recv_s[2])
+                self.send_contents["message"] = "{}: 私は {} です。".format(player,role)
+            elif recv_s[0] == 'ESTIMATE':
+                role = self.role_translate(recv_s[2])
+                self.send_contents["message"] = "{}: 私は{}が{}だとおもいます。".format(player,target,role)
+            elif recv_s[0] == 'VOTE':
+                self.send_contents["message"] = "{}:私は{}に投票します。".format(player,target)
+            
+            self.send_msg()
+            
         self.talkHistory = copy.deepcopy(self.talk_this_turn)
         
         # self.turn += 1
 
-    def player_talk(self,player_name,target_name,role_jp):
+    def player_talk(self,player_name,talktype,target,role):
         self.talk_this_turn = []
-        print(player_name)
+        idx = self.infomap_all[player_name]['agent']
+        if talktype == "COMINGOUT":
+            recv = cb.comingout(idx,role)
+        elif talktype == "ESTIMATE":
+            target_idx = self.infomap_all[target]['agent']
+            recv = cb.estimate(target_idx,role)
+        elif talktype == "VOTE":
+            target_idx = self.infomap_all[target]['agent']
+            recv = cb.vote(target_idx)
+        talk = {
+            'agent': idx,
+            'day' : self.day,
+            'idx': self.talknum,
+            'text': recv,
+            'turn': self.turn,
+        }
+        self.talknum += 1
+        self.talk_this_turn.append(talk)
+        self.infomap['talkList'].append(talk)
+        print(talk)
 
+
+    def role_translate(self,role):
+        if role == 'VILLAGER':
+            return '村人'
+        elif role == 'SEER':
+            return  '占い師'
+        elif role == 'POSSESSED':
+            return  '狂人'
+        elif role == 'WEREWOLF':
+            return '人狼'
 
     def create_msg(self,npc):
         #print(player_name)
         # PCには 'request' 'gameInfo' さえ渡せていればよさそう
         # NPCには以下のデータを渡す。whisperHistoryはNoneのまま
         if self.request == 'INITIALIZE' :
-            self.game_data = {
+            game_data = {
                 'gameInfo': self.infomap_all[npc[1]],
                 'gameSetting': self.game_setting,
                 'request': self.request,
@@ -296,7 +351,7 @@ class GameMaster(object):
                 'whisperHistory': None,
             }
         elif self.request == 'DAILY_INITIALIZE':
-            self.game_data = {
+            game_data = {
                 'gameInfo': self.infomap_all[npc[1]],
                 'gameSetting': None,
                 'request': self.request,
@@ -304,7 +359,7 @@ class GameMaster(object):
                 'whisperHistory': None,
             }
         elif self.request == 'FINISH':
-            self.game_data = {
+            game_data = {
                 'gameInfo': self.infomap_all[npc[1]],
                 'gameSetting': None,
                 'request': self.request,
@@ -312,7 +367,7 @@ class GameMaster(object):
                 'whisperHistory': None,
             }
         elif self.request == 'DAILY_FINISH':
-            self.game_data = {
+            game_data = {
                 'gameInfo': None,
                 'gameSetting': None,
                 'request': self.request,
@@ -320,7 +375,7 @@ class GameMaster(object):
                 'whisperHistory': [],
             }
         elif self.request == 'TALK':
-            self.game_data = {
+            game_data = {
                 'gameInfo': None,
                 'gameSetting': None,
                 'request': self.request,
@@ -328,7 +383,7 @@ class GameMaster(object):
                 'whisperHistory': [],
             }
         elif self.request == 'ATTACK':
-            self.game_data = {
+            game_data = {
                 'gameInfo': self.infomap_all[npc[1]],
                 'gameSetting': None,
                 'request': self.request,
@@ -336,7 +391,7 @@ class GameMaster(object):
                 'whisperHistory': None,
             }
         elif self.request == 'VOTE':
-            self.game_data = {
+            game_data = {
                 'gameInfo': None,
                 'gameSetting': None,
                 'request': self.request,
@@ -344,14 +399,15 @@ class GameMaster(object):
                 'whisperHistory': None,
             }
         else :
-            self.game_data = {
+            game_data = {
                 'gameInfo': None,
                 'gameSetting': None,
                 'request': self.request,
                 'talkHistory': None,
                 'whisperHistory': None,
             }
-        return self.NpcPerse.connect_parse(npc[0],self.game_data)
+        #return self.NpcParse.connect_parse(npc[0],game_data)
+        return npc[3].connect_parse(game_data)
 
     def send_msg(self):
         for k, c in self.clientlist[self.room_name].items():
@@ -362,7 +418,8 @@ class GameMaster(object):
             try:
                 c['mode'] = 'INITIALIZE'
                 self.server.send_message(self.clientlist[self.room_name][k], json.dumps(c))
-                self.send_contents["message"] = "あなたは {} です".format(c['myRole'])
+                role = self.role_translate(c['myRole'])
+                self.send_contents["message"] = "あなたは {} です".format(role)
                 self.server.send_message(self.clientlist[self.room_name][k], json.dumps(self.send_contents))
             except KeyError:
                 # NPCはKeyErrorを吐く
@@ -370,7 +427,7 @@ class GameMaster(object):
 
 
     def GameMain(self, room_name, server, clientlist, send_contents):
-        self.NpcPerse = npc_parse.NPCPerse()
+        # self.NpcPerse = npc_parse.NPCPerse()
         
         self.day = 0
         self.room_name = room_name
@@ -389,16 +446,18 @@ class GameMaster(object):
             # 占い師、人狼をピックアップしとく
             self.seer = int([k for k, v in self.RoleMap.items() if v == 'SEER'][0])
             self.wolf = int([k for k, v in self.RoleMap.items() if v == 'WEREWOLF'][0])
-
+            
             self.send_info()
 
             self.daily_initialize()
             self.daily_finish()
             
             #self.gm_attack(0)
-            self.gm_divine(0)
+            #self.gm_divine(0)
             self.day += 1
-
+        
+        self.gm_talk()
+        #self.gm_talk()
         """
         else:
             # DAY 1 ~

@@ -41,7 +41,7 @@ function create_web_socket() {
             $(".vote");
             $(".attack");
             $(".talk").show();
-            get_player_info();
+            // get_player_info();
         }
 
         // 投票、襲撃、占いフェーズ時
@@ -59,8 +59,8 @@ function create_web_socket() {
             $(".divine").hide();
             $(".attack").hide();
             $(".vote").hide();
-            get_player_info();
-            set_divine_list();
+            // get_player_info();
+            // set_divine_list();
         }
         // 昼フェーズ時
         else if (receiveData["mode"] == "TALK") {
@@ -71,8 +71,8 @@ function create_web_socket() {
             // $(".divine").hide();
             // $(".attack").hide();
             // $(".vote").hide();
-            get_player_info();
-            set_divine_list();
+            // get_player_info();
+            // set_divine_list();
         }
         $(".chat_screen").append("<div class='card-text'>" + receiveData["message"] + "</div>");
         $('.chat_screen').animate({ scrollTop: $('.chat_screen')[0].scrollHeight }, 'fast');
@@ -193,8 +193,8 @@ function set_select_val() {
             $("#third_choice").hide();
             $("#second_choice").show();
             $("#second_choice").html("");
-            player_info.forEach(function (data) {
-                $("#second_choice").append("<option>" + data + "</option>");
+            Object.keys(player_info).forEach(function (key) {
+                $("#second_choice").append("<option class='target_name'>" + player_info[key][0] + "</option>");
             });
         }
     });
@@ -265,6 +265,7 @@ $(function () {
     // $(".free").hide();
     $(".other").hide();
     $(".talk").hide();
+    $("#second_choice").hide();
     var urlParams = new URLSearchParams(window.location.search);
     player_name = urlParams.get("player_name");
     room_name = urlParams.get("room_name");

@@ -62,15 +62,31 @@ def send_msg_allclient(client, server, receive):
         if message[0] == "カミングアウト":
             send_contents["message"] = "{} ： 私は【{}】です。".format(
                 player_name, message[1])
-            gm[room_name].player_talk(player_name,message[1],None)
+            if message[1] == "占い師":
+                role = "SEER"
+            elif message[1] == "狂人":
+                role = "POSSESSED"
+            elif message[1] == "人狼":
+                role = "WEREWOLF"
+            else:
+                role = "VILLAGER"
+            gm[room_name].player_talk(player_name,"COMINGOUT",None,role)
         elif message[0] == "推定発言":
             send_contents["message"] = "{} ： 私は【{}】が【{}】だと思います。".format(
                 player_name, message[1], message[2])
-            gm[room_name].player_talk(player_name,message[1],message[2])      
+            if message[2] == "占い師":
+                role = "SEER"
+            elif message[2] == "狂人":
+                role = "POSSESSED"
+            elif message[2] == "人狼":
+                role = "WEREWOLF"
+            else:
+                role = "VILLAGER"
+            gm[room_name].player_talk(player_name,"ESTIMATE",message[1],role)      
         elif message[0] == "投票発言":
             send_contents["message"] = "{} ： 私は【{}】に投票します。".format(
                 player_name, message[1])
-            gm[room_name].player_talk(player_name,message[1],None)
+            gm[room_name].player_talk(player_name,"VOTE",message[1],None)
 
     elif mode == "vote":
         send_contents["message"] = "{} ： 【{}】に投票".format(
