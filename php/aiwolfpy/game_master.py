@@ -338,6 +338,34 @@ class GameMaster(object):
         elif role == 'WEREWOLF':
             return '人狼'
 
+    def judge(self):
+        #self.status['3'] = 'DEAD'
+        #self.status['4'] = 'DEAD'
+        #self.status['1'] = 'DEAD'
+        dead_agent = [k for k, v in self.status.items() if v == 'DEAD']
+        alive_human = 4
+        for idx in dead_agent:
+            if self.RoleMap[idx] == 'WEREWOLF':
+                self.game_run = False
+                self.request = "FINISH"
+                self.send_contents["message"] = "人狼が死んだので、村人陣営の勝利です。"
+                self.send_contents["mode"] = self.request
+                self.send_msg()
+                for npc in self.NpcList:
+                    self.create_msg(npc)
+                return True
+            else:
+                alive_human -=1
+        if alive_human <= 1:
+            self.game_run = False
+            self.request = "FINISH"
+            self.send_contents["message"] = "生存者の半数が人狼になったので、人狼陣営の勝利です。"
+            self.send_contents["mode"] = self.request
+            self.send_msg()
+            for npc in self.NpcList:
+                self.create_msg(npc)
+            return True   
+
     def create_msg(self,npc):
         #print(player_name)
         # PCには 'request' 'gameInfo' さえ渡せていればよさそう
@@ -446,7 +474,7 @@ class GameMaster(object):
             # 占い師、人狼をピックアップしとく
             self.seer = int([k for k, v in self.RoleMap.items() if v == 'SEER'][0])
             self.wolf = int([k for k, v in self.RoleMap.items() if v == 'WEREWOLF'][0])
-            
+
             self.send_info()
 
             self.daily_initialize()
@@ -455,8 +483,10 @@ class GameMaster(object):
             #self.gm_attack(0)
             #self.gm_divine(0)
             self.day += 1
+
+        #self.judge()
         
-        self.gm_talk()
+        #self.gm_talk()
         #self.gm_talk()
         """
         else:
