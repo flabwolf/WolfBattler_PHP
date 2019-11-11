@@ -7,9 +7,7 @@ var send_contents;
 
 // ウェブソケットの立ち上げ
 function create_web_socket() {
-    // var url = "ws://localhost:3000/htmls/room.html?room_name=" + room_name + "&player_name=" + player_name
     ws = new WebSocket("ws://localhost:3000/htmls/room.html");
-    // ws = new WebSocket("ws://f-server.ibe.kagoshima-u.ac.jp:3000/htmls/room.html");
 
     ws.onopen = function () {
         ws.send(JSON.stringify(send_contents));
@@ -41,7 +39,6 @@ function create_web_socket() {
             $(".vote");
             $(".attack");
             $(".talk").show();
-            // get_player_info();
         }
 
         // 投票、襲撃、占いフェーズ時
@@ -53,26 +50,17 @@ function create_web_socket() {
 
         // 夜フェーズ時
         else if (receiveData["mode"] == "NIGHT") {
-            // $(".chat_screen").text("");
             $(".talk").hide();
             $(".free").hide();
             $(".divine").hide();
             $(".attack").hide();
             $(".vote").hide();
-            // get_player_info();
-            // set_divine_list();
         }
         // 昼フェーズ時
         else if (receiveData["mode"] == "TALK") {
-            // $(".chat_screen").text("");
             $(".talk").show();
             $(".free").hide();
             $(".other").hide();
-            // $(".divine").hide();
-            // $(".attack").hide();
-            // $(".vote").hide();
-            // get_player_info();
-            // set_divine_list();
         }
         $(".chat_screen").append("<div class='card-text'>" + receiveData["message"] + "</div>");
         $('.chat_screen').animate({ scrollTop: $('.chat_screen')[0].scrollHeight }, 'fast');
@@ -202,6 +190,7 @@ function set_select_val() {
 
 // 投票、襲撃、占い用の選択リストのセット
 function set_other_list() {
+    $("#other_list").text("")
     Object.keys(player_info).forEach(function (key) {
         $("#other_list").append("<option class='target_name'>" + player_info[key][0] + "</option>");
     });
@@ -217,24 +206,6 @@ function speak_other() {
     });
 }
 
-// ルーム内のプレイヤー情報取得
-// function get_player_info() {
-//     $.ajax({
-//         url: "../php/ajax.php",
-//         dataType: "json",
-//         type: "post",
-//         async: false,
-//         data: {
-//             "func": "get_player_info",
-//             "room_name": room_name
-//         }
-//     })
-//         .done(function (data) {
-//             console.log(data);
-//             player_info = data;
-//             $("#second_choice").hide();
-//         });
-// }
 
 // 発言する（ゲーム中）
 function speak_talk() {
