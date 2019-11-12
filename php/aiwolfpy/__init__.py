@@ -10,4 +10,5 @@ from . import game_master
 # from . import websocket_perser
 #from .npc_parse import connect_parse
 from . import simple
+from . import wasetch
 from . import npc_parse

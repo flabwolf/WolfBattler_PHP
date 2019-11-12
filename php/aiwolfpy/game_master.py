@@ -7,7 +7,8 @@ import sqlite3
 import time
 
 from . import npc_parse
-from . import simple as summon #召喚するエージェント __init__.py も変更する
+#from . import simple as summon #召喚するエージェント __init__.py も変更する
+from . import wasetch as summon
 from . import contentbuilder as cb
 
 class GameMaster(object):
@@ -105,7 +106,8 @@ class GameMaster(object):
                 NPC = (random.randint(0,100),npc_name,p_id,room_id[0][0])
                 # c.execute("insert into players values (?,?,?,?)",NPC)
                 players.append(NPC)
-                npc_agent = summon.SampleAgent(npc_name)
+                # npc_agent = summon.SampleAgent(npc_name)
+                npc_agent = summon.AgentW(npc_name)
                 parse = npc_parse.NPCParse(npc_agent)
                 self.NpcList.append([npc_agent,npc_name,p_id,parse])
             # print(self.NpcList)
@@ -322,26 +324,33 @@ class GameMaster(object):
             self.infomap['talkList'].append(talk)
 
             recv_s = recv.split()
+
             # print(recv_s)
-            for i in range(1,6):
-                if str(i) in recv_s[1]:
-                    idx = i
-                    break
-            
+            try:
+                for i in range(1,6):
+                    if str(i) in recv_s[1]:
+                        idx = i
+                        break
+            except IndexError:
+                pass
+
+            try:
+                role = self.role_translate(recv_s[2])
+            except IndexError:
+                pass
+    
             target = self.namemap[str(i)]
+            player = self.namemap[str(npc[2])]
 
             self.send_contents["mode"] = self.request
             if recv_s[0] == 'COMINGOUT':
-                player = self.namemap[str(npc[2])]
-                role = self.role_translate(recv_s[2])
                 self.send_contents["message"] = "{}: 私は {} です。".format(player,role)
             elif recv_s[0] == 'ESTIMATE':
-                player = self.namemap[str(npc[2])]
-                role = self.role_translate(recv_s[2])
                 self.send_contents["message"] = "{}: 私は{}が{}だとおもいます。".format(player,target,role)
             elif recv_s[0] == 'VOTE':
-                player = self.namemap[str(npc[2])]
                 self.send_contents["message"] = "{}:私は{}に投票します。".format(player,target)
+            elif recv_s[0] == 'DIVINED':
+                self.send_contents["message"] = "{}:{}を占った結果、{}でした。".format(player,target,role)
             else:
                 self.send_contents["message"] = "{}:SKIP".format(player)            
             self.send_msg()
@@ -361,6 +370,9 @@ class GameMaster(object):
         elif talktype == "VOTE":
             target_idx = self.infomap_all[target]['agent']
             recv = cb.vote(target_idx)
+        elif talktype == "DIVINED":
+            target_idx = self.infomap_all[target]['agent']
+            recv = cb.divined(target_idx,role)
         talk = {
             'agent': idx,
             'day' : self.day,
@@ -546,8 +558,7 @@ class GameMaster(object):
                 self.daily_initialize()
                 self.turn = 0
                 self.player_talked = 0
-                while(self.time.time):
-                #while(time.time - talkstart < 30.0):
+                while(self.turn != 5):
                     if self.player_talked == len(self.playerlist):
                         self.gm_talk()
                         self.turn += 1

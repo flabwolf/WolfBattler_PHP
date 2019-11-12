@@ -6,12 +6,12 @@ from threading import Thread
 
 #PORT = 3000
 #HOST = "localhost"
+# HOST はサーバー側にするPCのipアドレスを入力する
 HOST = "10.200.11.23"
 PORT = 443
 
 clientlist = {}
 # HOST = "http://f-server.ibe.kagoshima-u.ac.jp"
-
 # def new_client(client, server):
 #     server.send_message_to_all("Hey all, a new client has joined us")
 
@@ -92,7 +92,16 @@ def send_msg_allclient(client, server, receive):
             send_contents["message"] = "{} ： 私は【{}】に投票します。".format(
                 player_name, message[1])
             gm[room_name].player_talk(player_name,"VOTE",message[1],None)
+        elif message[0] == "占い発言":
+            send_contents["message"] = "{} ： 【{}】を占った結果、【{}】でした。".format(
+                player_name, message[1], message[2])
+            if message[2] == "人間":
+                role = "HUMAN"
+            elif message[2] == "人狼":
+                role = "WEREWOLF"
+            gm[room_name].player_talk(player_name,"DIVINED",message[1],role)      
 
+        """
     elif mode == "vote":
         send_contents["message"] = "{} ： 【{}】に投票".format(
             player_name, message)
@@ -116,6 +125,7 @@ def send_msg_allclient(client, server, receive):
         server.send_message(client,json.dumps(send_contents))
 
         send_contents["message"] = "【{}】が襲撃されました。".format(message)
+        """
     
     elif mode == "other":
         gm[room_name].action(player_name,message)        

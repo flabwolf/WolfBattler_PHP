@@ -7,6 +7,7 @@ var send_contents;
 
 // ウェブソケットの立ち上げ
 function create_web_socket() {
+    // サーバー側のipアドレス
     // ws = new WebSocket("ws://localhost:3000/htmls/room.html");
     ws = new WebSocket("ws://10.200.11.23:443/htmls/room.html");
 
@@ -186,6 +187,18 @@ function set_select_val() {
                 $("#second_choice").append("<option class='target_name'>" + player_info[key][0] + "</option>");
             });
         }
+        else if (first == "占い発言") {
+            $("#third_choice").show();
+            $("#second_choice").show();
+            $("#second_choice").html("");
+            $("#third_choice").html("");
+            Object.keys(player_info).forEach(function (key) {
+                $("#second_choice").append("<option class='target_name'>" + player_info[key][0] + "</option>");
+            });
+            $("#third_choice").append("<option>人間</option>");
+            $("#third_choice").append("<option>人狼</option>");
+
+        }
     });
 }
 
@@ -228,6 +241,12 @@ function speak_talk() {
         else if (first == "投票発言") {
             second = $("#second_choice").val();
             send_contents["message"] = [first, second];
+            ws.send(JSON.stringify(send_contents));
+        }
+        else if (first == "占い発言") {
+            second = $("#second_choice").val();
+            third = $("#third_choice").val();
+            send_contents["message"] = [first, second, third];
             ws.send(JSON.stringify(send_contents));
         }
     });
