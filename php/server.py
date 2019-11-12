@@ -4,9 +4,11 @@ import json
 import aiwolfpy
 from threading import Thread
 
-# PORT = 3001
+#PORT = 3000
+#HOST = "localhost"
+HOST = "10.200.11.23"
 PORT = 3000
-HOST = "localhost"
+
 clientlist = {}
 # HOST = "http://f-server.ibe.kagoshima-u.ac.jp"
 

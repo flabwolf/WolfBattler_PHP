@@ -93,7 +93,7 @@ function admin_login() {
         e.preventDefault();
         $admin_id = $("#admin_id").val();
         $admin_pw = $("#admin_pw").val();
-        if ($admin_id == "f-lab" & $admin_pw == "suuri4f") {
+        if ($admin_id == "admin" & $admin_pw == "pass") {
             console.log("管理者ページにログインしました");
             hide_login_page();
             show_main_page();

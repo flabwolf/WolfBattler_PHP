@@ -7,7 +7,8 @@ var send_contents;
 
 // ウェブソケットの立ち上げ
 function create_web_socket() {
-    ws = new WebSocket("ws://localhost:3000/htmls/room.html");
+    // ws = new WebSocket("ws://localhost:3000/htmls/room.html");
+    ws = new WebSocket("ws://10.200.11.23:3000/htmls/room.html");
 
     ws.onopen = function () {
         ws.send(JSON.stringify(send_contents));

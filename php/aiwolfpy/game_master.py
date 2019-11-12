@@ -530,7 +530,7 @@ class GameMaster(object):
                 self.daily_initialize()
                 self.daily_finish()
                 
-                time.sleep(1)
+                time.sleep(0.3)
                 self.actionflag = True
                 self.actionlist = []
                 self.act_target = None
@@ -541,18 +541,20 @@ class GameMaster(object):
 
             else:
                 # DAY 1 ~
-                time.sleep(1)
+                time.sleep(0.3)
+                talkstart = time.time()
                 self.daily_initialize()
                 self.turn = 0
                 self.player_talked = 0
-                while(self.turn!=10):
+                while(self.time.time):
+                #while(time.time - talkstart < 30.0):
                     if self.player_talked == len(self.playerlist):
                         self.gm_talk()
                         self.turn += 1
                         self.player_talked = 0
                 self.daily_finish()
                 
-                time.sleep(1)
+                time.sleep(0.3)
                 self.actionflag = True
                 self.actionlist = []
                 self.act_target = None
@@ -560,12 +562,12 @@ class GameMaster(object):
                 while(self.actionflag):
                     pass
                 
-                time.sleep(1)
+                time.sleep(0.3)
                 game_run = self.judge()
                 if game_run == False:
                     break
 
-                time.sleep(1)
+                time.sleep(0.3)
                 self.actionflag = True
                 self.actionlist = []
                 self.act_target = None
@@ -573,12 +575,12 @@ class GameMaster(object):
                 while(self.actionflag):
                     pass
                 
-                time.sleep(1)
+                time.sleep(0.3)
                 game_run = self.judge()
                 if game_run == False:
                     break
 
-                time.sleep(1)
+                time.sleep(0.3)
                 self.actionflag = True
                 self.actionlist = []
                 self.act_target = None
