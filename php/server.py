@@ -34,7 +34,7 @@ def send_msg_allclient(client, server, receive):
         else:
             clientlist[room_name] = {}
             gm[room_name] = aiwolfpy.game_master.GameMaster()
-            #clientlist[room_name]["clients"] = []
+            # clientlist[room_name]["clients"] = []
             # clientlist[room_name]["clients"].append(client)
             clientlist[room_name][player_name] = client
     

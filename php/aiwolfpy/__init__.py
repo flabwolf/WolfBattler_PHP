@@ -11,4 +11,5 @@ from . import game_master
 #from .npc_parse import connect_parse
 from . import simple
 from . import wasetch
+from . import N0930_2017_2
 from . import npc_parse

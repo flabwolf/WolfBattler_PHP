@@ -8,7 +8,8 @@ import time
 
 from . import npc_parse
 #from . import simple as summon #召喚するエージェント __init__.py も変更する
-from . import wasetch as summon
+#from . import wasetch as summon
+from . import N0930_2017_2 as summon
 from . import contentbuilder as cb
 
 class GameMaster(object):
@@ -100,14 +101,14 @@ class GameMaster(object):
             while(len(players)!=5):
                 # PCが5人に満たないときはNPCを召喚する。
                 # NPCはgame_master間でやり取りをする(ソケット通信をしない)
-                # print('NPC append')
+                print('NPC append')
                 p_id = len(players)+1
                 npc_name = 'NPC-'+str(p_id)
                 NPC = (random.randint(0,100),npc_name,p_id,room_id[0][0])
                 # c.execute("insert into players values (?,?,?,?)",NPC)
                 players.append(NPC)
                 # npc_agent = summon.SampleAgent(npc_name)
-                npc_agent = summon.AgentW(npc_name)
+                npc_agent = summon.Agent(npc_name)
                 parse = npc_parse.NPCParse(npc_agent)
                 self.NpcList.append([npc_agent,npc_name,p_id,parse])
             # print(self.NpcList)
