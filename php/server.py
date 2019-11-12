@@ -7,7 +7,7 @@ from threading import Thread
 #PORT = 3000
 #HOST = "localhost"
 HOST = "10.200.11.23"
-PORT = 3000
+PORT = 443
 
 clientlist = {}
 # HOST = "http://f-server.ibe.kagoshima-u.ac.jp"
