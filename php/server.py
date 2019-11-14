@@ -40,6 +40,8 @@ def send_msg_allclient(client, server, receive):
     
     elif mode == "exit":
         send_contents["message"] = player_name + "が退室しました。"
+        if len(clientlist) == 1:
+            thread[room_name].join()
     
     elif mode == "normal":
         send_contents["message"] = player_name + " ： " + message
@@ -50,8 +52,8 @@ def send_msg_allclient(client, server, receive):
         for k, c in clientlist[room_name].items():
             server.send_message(c, json.dumps(send_contents))
         # gm[room_name].GameMain(room_name,server,clientlist,send_contents)
-        thread = Thread(target=gm[room_name].GameMain, args = (room_name,server,clientlist,send_contents), daemon=True)
-        thread.start()
+        thread[room_name] = Thread(target=gm[room_name].GameMain, args = (room_name,server,clientlist,send_contents), daemon=True)
+        thread[room_name].start()
         infomap_all = gm[room_name].infomap_all
         return 0
         """
@@ -142,6 +144,7 @@ def send_msg_allclient(client, server, receive):
 
 #gm = aiwolfpy.game_master.GameMaster()
 gm = dict()
+thread = dict()
 server = WebsocketServer(PORT, host=HOST)
 # server.set_fn_new_client(new_client)
 server.set_fn_message_received(send_msg_allclient)

@@ -12,7 +12,8 @@ import numpy as np
 import keras
 import os
 from keras.models import model_from_json
-
+from keras import backend as K
+import tensorflow as tf
 
 myname = '0930_2017_2'
 
@@ -28,21 +29,30 @@ class Agent(object):
             "%s/WOLF_model.json" % PATH).read())
         #self.wolf_model.load_weights(
         #    "%s/WOLF_weights.h5" % PATH)
-        #self.wolf_model._make_predict_function()
+        self.wolf_model._make_predict_function()
+        #self.wolf_session = K.get_session()
+        #self.wolf_graph = tf.get_default_graph()
+        #self.wolf_graph.finalize()
 
         # 占い師推定モデル
         self.seer_model = model_from_json(open(
             "%s/SEER_model.json" % PATH).read())
         #self.seer_model.load_weights(
         #    "%s/SEER_weights.h5" % PATH)
-        #self.seer_model._make_predict_function()
+        self.seer_model._make_predict_function()
+        #self.seer_session = K.get_session()
+        #self.seer_graph = tf.get_default_graph()
+        #self.seer_graph.finalize()
 
         # 狂人推定モデル
         self.poss_model = model_from_json(open(
             "%s/POSS_model.json" % PATH).read())
         #self.poss_model.load_weights(
         #    "%s/POSS_weights.h5" % PATH)
-        #self.poss_model._make_predict_function()
+        self.poss_model._make_predict_function()
+        #self.poss_session = K.get_session()
+        #self.poss_graph = tf.get_default_graph()
+        #self.poss_graph.finalize()
 
         """
         推定精度計算用

@@ -40,7 +40,7 @@ function create_web_socket() {
             $(".divine");
             $(".vote");
             $(".attack");
-            $(".talk").show();
+            $(".talk").hide();
         }
         // 投票、襲撃、占いフェーズ時
         if ((receiveData["mode"] == "VOTE") | (receiveData["mode"] == "ATTACK") | (receiveData["mode"] == "DIVINE")) {

@@ -611,7 +611,7 @@ class GameMaster(object):
                 self.turn = 0
                 self.player_talked = 0
                 self.talk_this_turn = []
-                while(self.turn != 1):
+                while(self.turn != 10):
                     if self.player_talked == len(self.playerlist)-self.deadpc:
                         self.gm_talk()
                         self.turn += 1
@@ -661,7 +661,7 @@ class GameMaster(object):
                 
                 self.day += 1
         
-        self.game_finish()        
+        self.game_finish()
         
 if __name__ == '__main__':
     gm = GameMaster()
