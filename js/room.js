@@ -42,25 +42,21 @@ function create_web_socket() {
             $(".attack");
             $(".talk").show();
         }
-
         // 投票、襲撃、占いフェーズ時
         if ((receiveData["mode"] == "VOTE") | (receiveData["mode"] == "ATTACK") | (receiveData["mode"] == "DIVINE")) {
             $(".talk").hide()
             $(".other").show();
             set_other_list();
         }
-
-        // 夜フェーズ時
-        else if (receiveData["mode"] == "NIGHT") {
-            $(".talk").hide();
-            $(".free").hide();
-            $(".divine").hide();
-            $(".attack").hide();
-            $(".vote").hide();
-        }
         // 昼フェーズ時
-        else if (receiveData["mode"] == "TALK") {
+        else if ((receiveData["mode"] == "TALK") | (receiveData["mode"] == "DAILY_INITIALIZE")) {
             $(".talk").show();
+            $(".free").hide();
+            $(".other").hide();
+        }
+        // 死んだ
+        else if (receiveData["mode"] == "DEAD") {
+            $(".talk").hide();
             $(".free").hide();
             $(".other").hide();
         }

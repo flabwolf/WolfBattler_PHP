@@ -26,22 +26,22 @@ class Agent(object):
         # 人狼推定モデル
         self.wolf_model = model_from_json(open(
             "%s/WOLF_model.json" % PATH).read())
-        self.wolf_model.load_weights(
-            "%s/WOLF_weights.h5" % PATH)
+        #self.wolf_model.load_weights(
+        #    "%s/WOLF_weights.h5" % PATH)
         #self.wolf_model._make_predict_function()
 
         # 占い師推定モデル
         self.seer_model = model_from_json(open(
             "%s/SEER_model.json" % PATH).read())
-        self.seer_model.load_weights(
-            "%s/SEER_weights.h5" % PATH)
+        #self.seer_model.load_weights(
+        #    "%s/SEER_weights.h5" % PATH)
         #self.seer_model._make_predict_function()
 
         # 狂人推定モデル
         self.poss_model = model_from_json(open(
             "%s/POSS_model.json" % PATH).read())
-        self.poss_model.load_weights(
-            "%s/POSS_weights.h5" % PATH)
+        #self.poss_model.load_weights(
+        #    "%s/POSS_weights.h5" % PATH)
         #self.poss_model._make_predict_function()
 
         """
@@ -133,10 +133,10 @@ class Agent(object):
         self.report = False
 
     def update(self, base_info, diff_data, request):
-        print("---------------------------------------")
+        #print("---------------------------------------")
         self.base_info = base_info
-        print(request)
-        print(diff_data)
+        #print(request)
+        #print(diff_data)
 
         if request == "DAILY_INITIALIZE" or request == "DIVINE" or request == "ATTACK":
             # ターン初期化
@@ -151,7 +151,7 @@ class Agent(object):
                     if base_info["statusMap"][str(i)] == "DEAD":
                         self.SeerList.remove(i)
             self.DAY = base_info["day"]
-            # print(base_info)
+            # #print(base_info)
             for idx, status in self.base_info["statusMap"].items():
                 self.info[idx][13] = self.DAY
                 if status == "ALIVE":
@@ -185,28 +185,29 @@ class Agent(object):
         """
 
         if request == "TALK":
-            # print(diff_data.shape)
+            # #print(diff_data.shape)
             # COMINGOUTの内容によってリストを分ける
             for i in range(diff_data.shape[0]):
                 if "COMINGOUT" in diff_data["text"][i] and diff_data["agent"][i] != self.idx:
                     if "SEER" in diff_data["text"][i] and not diff_data["agent"][i] in self.SeerList:
                         self.SeerList.append(diff_data["agent"][i])
-                        # print(self.SeerList)
+                        # #print(self.SeerList)
 
         for i in diff_data.values:
-            # print(i)
+            # #print(i)
             self.info_update(i)
 
         if request == "DAILY_FINISH":
 
             for key, val in self.info.items():
-                print("プレイヤー%s：%s" % (key, val))
+                pass
+                #print("プレイヤー%s：%s" % (key, val))
 
-        print("生存者：" + str(self.AliveList))
-        print("他の占い師：" + str(self.SeerList))
-        print("占い済み：" + str(self.DivinedList))
-        print("黒確定："+str(self.wolf))
-        print("---------------------------------------")
+        #print("生存者：" + str(self.AliveList))
+        #print("他の占い師：" + str(self.SeerList))
+        #print("占い済み：" + str(self.DivinedList))
+        #print("黒確定："+str(self.wolf))
+        #print("---------------------------------------")
 
     def dayStart(self):
         return None
@@ -270,7 +271,7 @@ class Agent(object):
             if self.vote_report and self.wolf == "":
                 self.vote_report = False
                 self.estimate_report = True
-                # print(self.vote_target)
+                # #print(self.vote_target)
                 vote = cb.vote(self.vote_target)
                 return vote
 
@@ -293,9 +294,9 @@ class Agent(object):
                 idx = self.seerPredict()
                 self.estimate_report = True
                 self.vote_report = True
-                print("候補：" + str(self.AliveList))
-                print("占い師："+str(idx))
-                print("占い先：" + str(idx))
+                #print("候補：" + str(self.AliveList))
+                #print("占い師："+str(idx))
+                #print("占い先：" + str(idx))
                 self.vote_target = idx
                 divined = cb.divined(idx, "WEREWOLF")
                 self.DivinedList.append(idx)
@@ -365,7 +366,7 @@ class Agent(object):
         return cb.over()
 
     def vote(self):
-        print("投票予定：" + str(self.v))
+        #print("投票予定：" + str(self.v))
 
         if self.role != "WEREWOLF" and self.role != "POSSESSED":
             # 占い師
@@ -383,21 +384,21 @@ class Agent(object):
                 self.pre_wolf.append(idx)
                 self.sum_poss += 1
                 self.pre_poss.append(idy)
-                print("候補：" + str(self.AliveList))
-                print("人狼：" + str(idx))
-                print("狂人："+str(idy))
-                print("投票先：" + str(idx))
+                #print("候補：" + str(self.AliveList))
+                #print("人狼：" + str(idx))
+                #print("狂人："+str(idy))
+                #print("投票先：" + str(idx))
                 return idx
             # 村人
             if self.role == "VILLAGER":
                 idx = self.wolfPredict()
                 idy = self.seerPredict()
                 idz = self.possPredict()
-                print("候補：" + str(self.AliveList))
-                print("人狼：" + str(idx))
-                print("占い師：" + str(idy))
-                print("狂人："+str(idz))
-                print("投票先：" + str(idx))
+                #print("候補：" + str(self.AliveList))
+                #print("人狼：" + str(idx))
+                #print("占い師：" + str(idy))
+                #print("狂人："+str(idz))
+                #print("投票先：" + str(idx))
                 self.sum_wolf += 1
                 self.pre_wolf.append(idx)
                 self.sum_seer += 1
@@ -407,18 +408,18 @@ class Agent(object):
                 return idx
         # 人狼
         if self.role == "WEREWOLF":
-            print("候補：" + str(self.AliveList))
+            #print("候補：" + str(self.AliveList))
             idx = self.possPredict()
             self.poss = idx
-            print("狂人：" + str(idx))
+            #print("狂人：" + str(idx))
             self.sum_poss += 1
             self.pre_poss.append(idx)
             idy = self.seerPredict()
-            print("占い師：" + str(idy))
+            #print("占い師：" + str(idy))
             self.sum_seer += 1
             self.pre_seer.append(idy)
             if idy in self.AliveList:
-                print("投票先：" + str(idy))
+                #print("投票先：" + str(idy))
                 self.voted = idy
                 return idy
             elif idx in self.AliveList:
@@ -426,7 +427,7 @@ class Agent(object):
                 if len(self.AliveList) > 1:
                     self.AliveList.remove(idx)
                     x = random.choice(self.AliveList)
-                print("投票先：" + str(x))
+                #print("投票先：" + str(x))
                 self.voted = x
                 return x
             else:
@@ -436,22 +437,22 @@ class Agent(object):
                     self.voted = x
                 else:
                     x = self.voted
-                print("投票先：" + str(x))
+                #print("投票先：" + str(x))
                 return x
 
         # 狂人
         if self.role == "POSSESSED":
             idx = self.wolfPredict()
             idy = self.seerPredict()
-            print("候補：" + str(self.AliveList))
-            print("人狼：" + str(idx))
+            #print("候補：" + str(self.AliveList))
+            #print("人狼：" + str(idx))
             self.sum_wolf += 1
             self.pre_wolf.append(idx)
-            print("占い師：" + str(idy))
+            #print("占い師：" + str(idy))
             self.sum_seer += 1
             self.pre_seer.append(idy)
             if idy in self.AliveList:
-                print("投票先：" + str(idy))
+                #print("投票先：" + str(idy))
                 self.voted = idy
                 return idy
             else:
@@ -462,38 +463,38 @@ class Agent(object):
                     self.voted = x
                 else:
                     x = self.voted
-                print("投票先：" + str(x))
+                #print("投票先：" + str(x))
                 return x
 
     def attack(self):
         if len(self.AliveList) >= 2:
-            print("候補：" + str(self.AliveList))
+            #print("候補：" + str(self.AliveList))
             idx = self.possPredict()
             self.poss = idx
-            print("狂人：" + str(idx))
+            #print("狂人：" + str(idx))
             idy = self.seerPredict()
-            print("占い師：" + str(idy))
+            #print("占い師：" + str(idy))
             self.sum_seer += 1
             self.sum_poss += 1
             self.pre_seer.append(idy)
             self.pre_poss.append(idx)
             # if idy in self.AliveList:
             if idy in self.AliveList:
-                print("襲撃先：" + str(idy))
+                #print("襲撃先：" + str(idy))
                 return idy
             elif idx in self.AliveList:
                 self.AliveList.remove(idx)
                 x = random.choice(self.AliveList)
-                print("襲撃先：" + str(x))
+                #print("襲撃先：" + str(x))
                 return x
             else:
                 x = random.choice(self.AliveList)
-                print("襲撃先：" + str(x))
+                #print("襲撃先：" + str(x))
                 return x
         else:
-            print("候補：" + str(self.AliveList))
+            #print("候補：" + str(self.AliveList))
             x = self.AliveList[0]
-            print("襲撃先：" + str(x))
+            #print("襲撃先：" + str(x))
             return x
 
     def divine(self):
@@ -502,7 +503,7 @@ class Agent(object):
         if self.DAY == 0:
             idx = random.choice(self.AliveList)
             # idx = (self.idx % 5) + 1
-            print("占い先："+str(idx))
+            #print("占い先："+str(idx))
             self.DivinedList.append(idx)
             return idx
         # 二日目以降
@@ -521,10 +522,10 @@ class Agent(object):
             self.pre_poss.append(idx)
             if idx == None:
                 return 1
-            print("候補：" + str(self.AliveList))
-            print("人狼：" + str(idx))
-            print("狂人："+str(idy))
-            print("占い先：" + str(idx))
+            #print("候補：" + str(self.AliveList))
+            #print("人狼：" + str(idx))
+            #print("狂人："+str(idy))
+            #print("占い先：" + str(idx))
             self.DivinedList.append(idx)
             return idx
 
@@ -533,14 +534,14 @@ class Agent(object):
 
     def finish(self):
         return None
-        print("【合計推定数】")
-        print("人狼：%d" % self.sum_wolf)
-        print("占い師：%d" % self.sum_seer)
-        print("狂人：%d" % self.sum_poss)
-        print("【合計的中数】")
-        print("人狼：%d" % self.acc_wolf)
-        print("占い師：%d" % self.acc_seer)
-        print("狂人：%d" % self.acc_poss)
+        #print("【合計推定数】")
+        #print("人狼：%d" % self.sum_wolf)
+        #print("占い師：%d" % self.sum_seer)
+        #print("狂人：%d" % self.sum_poss)
+        #print("【合計的中数】")
+        #print("人狼：%d" % self.acc_wolf)
+        #print("占い師：%d" % self.acc_seer)
+        #print("狂人：%d" % self.acc_poss)
         wolf = 0
         seer = 0
         poss = 0
@@ -550,10 +551,10 @@ class Agent(object):
             seer = self.acc_seer / self.sum_seer * 100
         if self.sum_poss != 0:
             poss = self.acc_poss / self.sum_poss * 100
-        print("【的中率】")
-        print("人狼：%.1f%%" % wolf)
-        print("占い師：%.1f%%" % seer)
-        print("狂人：%.1f%%" % poss)
+        #print("【的中率】")
+        #print("人狼：%.1f%%" % wolf)
+        #print("占い師：%.1f%%" % seer)
+        #print("狂人：%.1f%%" % poss)
 
         return None
 
@@ -576,7 +577,7 @@ class Agent(object):
                     self.info[idx][3] = 1
             if "DIVINED" in text[5] and len(text[5]) <= 35:
                 result = (text[5].split("DIVINED Agent["))[1].split("] ")
-                # print(result)
+                # #print(result)
                 idy = int(result[0])
                 role = result[1]
                 if "WEREWOLF" in role:
@@ -587,7 +588,7 @@ class Agent(object):
                     self.info[str(idy)][12] += 1
             if "VOTE" in text[5]:
                 result = (text[5].split("VOTE Agent["))[1].split("]")
-                # print(result)
+                # #print(result)
                 idy = int(result[0])
                 self.info[idx][10] = idy
                 # self.info[str(idy)][17] += 1
@@ -637,9 +638,9 @@ class Agent(object):
                 self.preInfo[0].append(i)
         a = np.array(self.preInfo)
         predict = self.wolf_model.predict(a)
-        # print(predict)
+        # #print(predict)
         idx = np.argsort(predict)
-        # print(idx)
+        # #print(idx)
         for i in range(-1, -6, -1):
             if idx[0][i] + 1 in self.AliveList and idx[0][i] + 1 != self.idx:
                 return idx[0][i] + 1
@@ -651,9 +652,9 @@ class Agent(object):
                 self.preInfo[0].append(i)
         a = np.array(self.preInfo)
         predict = self.seer_model.predict(a)
-        # print(predict)
+        # #print(predict)
         idx = np.argsort(predict)
-        # print(idx)
+        # #print(idx)
         for i in range(-1, -6, -1):
             # if idx[0][i] + 1 != self.idx and idx[0][i]+1 != self.poss:
             if idx[0][i] + 1 != self.idx:
@@ -666,9 +667,9 @@ class Agent(object):
                 self.preInfo[0].append(i)
         a = np.array(self.preInfo)
         predict = self.poss_model.predict(a)
-        # print(predict)
+        # #print(predict)
         idx = np.argsort(predict)
-        # print(idx)
+        # #print(idx)
         for i in range(-1, -6, -1):
             if idx[0][i] + 1 != self.idx:
                 return idx[0][i] + 1
